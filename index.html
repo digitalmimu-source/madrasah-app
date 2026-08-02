@@ -105,7 +105,12 @@
           </button>
           
           <button onclick="switchTab('absensi')" id="nav-absensi" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
-            <i data-lucide="clipboard-check" class="w-5 h-5"></i> Absensi
+            <i data-lucide="clipboard-check" class="w-5 h-5"></i> Absensi Siswa
+          </button>
+
+          <!-- NAV BARU: JURNAL MENGAJAR -->
+          <button onclick="switchTab('jurnal')" id="nav-jurnal" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+            <i data-lucide="book-open" class="w-5 h-5"></i> Jurnal Mengajar
           </button>
           
           <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn role-admin-only w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
@@ -157,7 +162,7 @@
 
         <!-- Tab: Dashboard -->
         <section id="tab-dashboard" class="tab-content space-y-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
               <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
               <div>
@@ -177,8 +182,16 @@
             <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
               <div class="p-3 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="clipboard-check" class="w-6 h-6"></i></div>
               <div>
-                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Catatan Absensi</p>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Absensi</p>
                 <h3 id="stat-absensi" class="text-2xl font-bold text-slate-800">0</h3>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+              <div class="p-3 bg-amber-50 text-amber-600 rounded-xl"><i data-lucide="book-open" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jurnal Mengajar</p>
+                <h3 id="stat-jurnal" class="text-2xl font-bold text-slate-800">0</h3>
               </div>
             </div>
           </div>
@@ -274,7 +287,7 @@
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <div class="flex items-center gap-3 w-full sm:w-auto">
               <h3 class="text-lg font-bold text-slate-800">Pencatatan Absensi</h3>
-              <!-- FILTER KELAS -->
+              <!-- FILTER KELAS TABEL -->
               <select id="filter-kelas-absensi" onchange="renderAbsensiTable()" class="px-3 py-1.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white font-medium">
                 <option value="ALL">Semua Kelas</option>
               </select>
@@ -305,6 +318,44 @@
                 </thead>
                 <tbody id="absensi-table-body" class="divide-y divide-slate-100 text-slate-600">
                   <tr><td colspan="6" class="text-center py-6 text-slate-400">Memuat data absensi...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB BARU: JURNAL MENGAJAR -->
+        <section id="tab-jurnal" class="tab-content space-y-4 hidden">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div class="flex items-center gap-3 w-full sm:w-auto">
+              <h3 class="text-lg font-bold text-slate-800">Jurnal Mengajar Guru</h3>
+              <select id="filter-kelas-jurnal" onchange="renderJurnalTable()" class="px-3 py-1.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white font-medium">
+                <option value="ALL">Semua Kelas</option>
+              </select>
+            </div>
+
+            <button onclick="openModalJurnal()" class="w-full sm:w-auto px-4 py-2 bg-brand-600 text-white font-medium text-sm rounded-xl hover:bg-brand-700 transition-all flex items-center justify-center gap-2">
+              <i data-lucide="plus" class="w-4 h-4"></i> Isi Jurnal Mengajar
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
+                  <tr>
+                    <th class="py-3.5 px-4">Tanggal</th>
+                    <th class="py-3.5 px-4">Guru Pengajar</th>
+                    <th class="py-3.5 px-4">Kelas</th>
+                    <th class="py-3.5 px-4">Mata Pelajaran</th>
+                    <th class="py-3.5 px-4">Jam Ke</th>
+                    <th class="py-3.5 px-4">Materi / Topik Pembahasan</th>
+                    <th class="py-3.5 px-4">Catatan/KBM</th>
+                    <th class="py-3.5 px-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="jurnal-table-body" class="divide-y divide-slate-100 text-slate-600">
+                  <tr><td colspan="8" class="text-center py-6 text-slate-400">Memuat data jurnal mengajar...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -415,16 +466,25 @@
 
       <form id="form-absensi" onsubmit="handleSaveAbsensi(event)" class="space-y-3">
         <input type="hidden" id="absensi-id">
+        
         <div>
-          <label class="block text-xs font-medium text-slate-600 mb-1">Pilih Siswa</label>
-          <select id="absensi-siswa-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
-            <!-- Pilihan Siswa Diberikan Dinamis -->
+          <label class="block text-xs font-medium text-slate-600 mb-1">1. Pilih Kelas</label>
+          <select id="absensi-input-kelas" onchange="filterSiswaByKelasInput()" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none bg-emerald-50/50 font-semibold text-slate-700">
+            <option value="ALL">-- Semua Kelas --</option>
           </select>
         </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">2. Pilih Siswa</label>
+          <select id="absensi-siswa-id" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </select>
+        </div>
+
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Tanggal Absensi</label>
           <input type="date" id="absensi-tanggal" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
+
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Status Kehadiran</label>
           <select id="absensi-status" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
@@ -434,14 +494,68 @@
             <option value="Alpha">Alpha</option>
           </select>
         </div>
+
         <div>
           <label class="block text-xs font-medium text-slate-600 mb-1">Keterangan Tambahan</label>
-          <input type="text" id="absensi-keterangan" placeholder="Misal: Surat izin dokter / Scan QR Code" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          <input type="text" id="absensi-keterangan" placeholder="Misal: Surat izin dokter" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
         </div>
 
         <div class="pt-3 flex justify-end gap-2">
           <button type="button" onclick="closeModalAbsensi()" class="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Batal</button>
           <button type="submit" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700">Simpan Absensi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FORM JURNAL MENGAJAR (BARU) -->
+  <div id="modal-jurnal" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h4 class="font-bold text-slate-800">Isi Jurnal Mengajar Guru</h4>
+        <button onclick="closeModalJurnal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <form id="form-jurnal" onsubmit="handleSaveJurnal(event)" class="space-y-3">
+        <input type="hidden" id="jurnal-id">
+        
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Tanggal KBM</label>
+            <input type="date" id="jurnal-tanggal" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Kelas</label>
+            <select id="jurnal-kelas" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none bg-white">
+              <option value="">-- Pilih Kelas --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Mata Pelajaran</label>
+            <input type="text" id="jurnal-mapel" placeholder="Misal: Fiqih / Matematika" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-600 mb-1">Jam Ke-</label>
+            <input type="text" id="jurnal-jam" placeholder="Misal: 1 - 2" required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Materi / Topik Pembahasan</label>
+          <textarea id="jurnal-materi" rows="3" placeholder="Tuliskan pokok pembahasan / bab yang diajarkan hari ini..." required class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 mb-1">Catatan Hambatan / Tugas / Siswa</label>
+          <input type="text" id="jurnal-catatan" placeholder="Misal: Kondisi kelas kondusif, PR Hal. 24" class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+        </div>
+
+        <div class="pt-3 flex justify-end gap-2">
+          <button type="button" onclick="closeModalJurnal()" class="px-4 py-2 border border-slate-300 rounded-xl text-sm font-medium text-slate-600 hover:bg-slate-50">Batal</button>
+          <button type="submit" class="px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700">Simpan Jurnal</button>
         </div>
       </form>
     </div>
@@ -492,7 +606,7 @@
   <script>
     const DEFAULT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyFOXhhHjJaU5XA5QyrcLhKpvcWHkGMkTai5-4_L6LKiecmzzAahgdNYzeUznOURSjusw/exec';
     let WEB_APP_URL = DEFAULT_WEB_APP_URL;
-    let globalData = { siswa: [], guru: [], jadwal: [], absensi: [], log: [] };
+    let globalData = { siswa: [], guru: [], jadwal: [], absensi: [], jurnal: [], log: [] };
     let currentUser = null;
     let html5QrCodeScanner = null;
 
@@ -500,6 +614,7 @@
       lucide.createIcons();
       document.getElementById('web-app-url').value = WEB_APP_URL;
       document.getElementById('absensi-tanggal').valueAsDate = new Date();
+      document.getElementById('jurnal-tanggal').valueAsDate = new Date();
       checkSession();
     });
 
@@ -581,7 +696,8 @@
         dashboard: 'Dashboard Utama',
         siswa: 'Manajemen Data Siswa',
         guru: 'Manajemen Data Guru',
-        absensi: 'Pencatatan Absensi',
+        absensi: 'Pencatatan Absensi Siswa',
+        jurnal: 'Jurnal Mengajar Guru',
         settings: 'Status Koneksi'
       };
       document.getElementById('page-title').innerText = titles[tabName] || 'Dashboard';
@@ -603,6 +719,7 @@
           renderGuruTable();
           populateKelasFilter();
           renderAbsensiTable();
+          renderJurnalTable();
           renderLogTable();
           populateSiswaDropdown();
         }
@@ -617,6 +734,7 @@
       document.getElementById('stat-siswa').innerText = (globalData.siswa || []).length;
       document.getElementById('stat-guru').innerText = (globalData.guru || []).length;
       document.getElementById('stat-absensi').innerText = (globalData.absensi || []).length;
+      document.getElementById('stat-jurnal').innerText = (globalData.jurnal || []).length;
     }
 
     // RENDER TABEL SISWA
@@ -673,17 +791,31 @@
       lucide.createIcons();
     }
 
-    // POPULATE KELAS FILTER
+    // POPULATE KELAS FILTER (Tabel & Modal Form Input)
     function populateKelasFilter() {
-      const select = document.getElementById('filter-kelas-absensi');
+      const selectFilterTabel = document.getElementById('filter-kelas-absensi');
+      const selectInputModal = document.getElementById('absensi-input-kelas');
+      const selectFilterJurnal = document.getElementById('filter-kelas-jurnal');
+      const selectJurnalModal = document.getElementById('jurnal-kelas');
+
       const listSiswa = globalData.siswa || [];
       const kelasList = [...new Set(listSiswa.map(s => s.kelas).filter(Boolean))].sort();
 
-      select.innerHTML = `<option value="ALL">Semua Kelas</option>` + 
+      const optionsTabel = `<option value="ALL">Semua Kelas</option>` + 
         kelasList.map(k => `<option value="${k}">Kelas ${k}</option>`).join('');
+      if (selectFilterTabel) selectFilterTabel.innerHTML = optionsTabel;
+      if (selectFilterJurnal) selectFilterJurnal.innerHTML = optionsTabel;
+
+      const optionsModal = `<option value="ALL">-- Pilih Kelas --</option>` + 
+        kelasList.map(k => `<option value="${k}">Kelas ${k}</option>`).join('');
+      if (selectInputModal) selectInputModal.innerHTML = optionsModal;
+      
+      const optionsJurnalModal = `<option value="">-- Pilih Kelas --</option>` + 
+        kelasList.map(k => `<option value="${k}">Kelas ${k}</option>`).join('');
+      if (selectJurnalModal) selectJurnalModal.innerHTML = optionsJurnalModal;
     }
 
-    // RENDER TABEL ABSENSI (DENGAN FILTER KELAS)
+    // RENDER TABEL ABSENSI
     function renderAbsensiTable() {
       const tbody = document.getElementById('absensi-table-body');
       const filterKelas = document.getElementById('filter-kelas-absensi').value;
@@ -721,6 +853,38 @@
       lucide.createIcons();
     }
 
+    // RENDER TABEL JURNAL MENGAJAR (BARU)
+    function renderJurnalTable() {
+      const tbody = document.getElementById('jurnal-table-body');
+      const filterKelas = document.getElementById('filter-kelas-jurnal').value;
+      let list = globalData.jurnal || [];
+
+      if (filterKelas !== 'ALL') {
+        list = list.filter(item => item.kelas === filterKelas);
+      }
+
+      if (list.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-6 text-slate-400">Belum ada jurnal mengajar tersimpan.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = list.map(item => `
+        <tr class="hover:bg-slate-50 transition-all">
+          <td class="py-3 px-4 text-xs font-mono whitespace-nowrap">${item.tanggal || '-'}</td>
+          <td class="py-3 px-4 font-medium text-slate-800">${item.namaGuru || '-'}</td>
+          <td class="py-3 px-4 text-xs font-bold"><span class="px-2 py-0.5 bg-slate-100 rounded">${item.kelas || '-'}</span></td>
+          <td class="py-3 px-4 font-semibold text-xs text-brand-700">${item.mapel || '-'}</td>
+          <td class="py-3 px-4 text-xs font-mono">${item.jamKe || '-'}</td>
+          <td class="py-3 px-4 text-xs font-medium text-slate-700">${item.materi || '-'}</td>
+          <td class="py-3 px-4 text-xs text-slate-500">${item.catatan || '-'}</td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="handleDeleteRecord('JURNAL', '${item.id}')" class="p-1 text-rose-500 hover:bg-rose-50 rounded-lg transition-all"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+          </td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
     function renderLogTable() {
       const tbody = document.getElementById('log-table-body');
       const logs = globalData.log || [];
@@ -740,14 +904,26 @@
       `).join('');
     }
 
-    function populateSiswaDropdown() {
+    // POPULATE DROPDOWN SISWA DI FORM ABSENSI
+    function populateSiswaDropdown(filterKelas = 'ALL') {
       const select = document.getElementById('absensi-siswa-id');
-      const list = globalData.siswa || [];
+      let list = globalData.siswa || [];
+
+      if (filterKelas !== 'ALL') {
+        list = list.filter(s => s.kelas === filterKelas);
+      }
+
       if (list.length === 0) {
-        select.innerHTML = `<option value="">-- Tidak Ada Data Siswa --</option>`;
+        select.innerHTML = `<option value="">-- Tidak Ada Siswa di Kelas Ini --</option>`;
         return;
       }
-      select.innerHTML = list.map(s => `<option value="${s.id}" data-nama="${s.nama}" data-kelas="${s.kelas}">${s.nama} (${s.kelas})</option>`).join('');
+
+      select.innerHTML = `<option value="">-- Pilih Nama Siswa --</option>` + list.map(s => `<option value="${s.id}" data-nama="${s.nama}" data-kelas="${s.kelas}">${s.nama} (${s.kelas})</option>`).join('');
+    }
+
+    function filterSiswaByKelasInput() {
+      const kelasSelected = document.getElementById('absensi-input-kelas').value;
+      populateSiswaDropdown(kelasSelected);
     }
 
     // MODAL & QR CODE GENERATOR
@@ -759,7 +935,6 @@
       const container = document.getElementById('qrcode-container');
       container.innerHTML = '';
 
-      // QR Code Permanen berbasis NISN & Nama
       const qrValue = `${nis}|${nama}`;
 
       new QRCode(container, {
@@ -804,7 +979,6 @@
     }
 
     async function onScanSuccess(decodedText) {
-      // Format decodedText: "NISN|Nama"
       const parts = decodedText.split('|');
       const nisScanned = parts[0];
       const namaScanned = parts[1] || '';
@@ -814,7 +988,6 @@
       if (matchedSiswa) {
         document.getElementById('scan-feedback').innerHTML = `<span class="text-emerald-600 font-bold">Mencatat: ${matchedSiswa.nama} (${matchedSiswa.kelas})...</span>`;
         
-        // Simpan Absensi Otomatis (Hadir)
         const today = new Date().toISOString().split('T')[0];
         const payload = {
           action: 'upsert',
@@ -843,9 +1016,7 @@
       }
     }
 
-    function onScanFailure(error) {
-      // Quiet scanner errors
-    }
+    function onScanFailure(error) {}
 
     // MODAL CONTROL
     function openModalSiswa() { document.getElementById('modal-siswa').classList.remove('hidden'); }
@@ -854,8 +1025,17 @@
     function openModalGuru() { document.getElementById('modal-guru').classList.remove('hidden'); }
     function closeModalGuru() { document.getElementById('modal-guru').classList.add('hidden'); }
 
-    function openModalAbsensi() { document.getElementById('modal-absensi').classList.remove('hidden'); }
+    function openModalAbsensi() { 
+      document.getElementById('modal-absensi').classList.remove('hidden'); 
+      document.getElementById('absensi-input-kelas').value = 'ALL';
+      populateSiswaDropdown('ALL');
+    }
     function closeModalAbsensi() { document.getElementById('modal-absensi').classList.add('hidden'); }
+
+    function openModalJurnal() {
+      document.getElementById('modal-jurnal').classList.remove('hidden');
+    }
+    function closeModalJurnal() { document.getElementById('modal-jurnal').classList.add('hidden'); }
 
     // SIMPAN GURU
     async function handleSaveGuru(e) {
@@ -889,6 +1069,11 @@
       const selectSiswa = document.getElementById('absensi-siswa-id');
       const selectedOption = selectSiswa.options[selectSiswa.selectedIndex];
 
+      if (!selectSiswa.value) {
+        alert('Silakan pilih siswa terlebih dahulu!');
+        return;
+      }
+
       const payload = {
         action: 'upsert',
         sheet: 'ABSENSI',
@@ -910,6 +1095,34 @@
         fetchData();
       } catch (err) {
         alert('Gagal menyimpan data absensi!');
+      }
+    }
+
+    // SIMPAN JURNAL MENGAJAR (BARU)
+    async function handleSaveJurnal(e) {
+      e.preventDefault();
+      const payload = {
+        action: 'upsert',
+        sheet: 'JURNAL',
+        data: {
+          id: document.getElementById('jurnal-id').value || 'JRN-' + Date.now(),
+          tanggal: document.getElementById('jurnal-tanggal').value,
+          namaGuru: currentUser.nama,
+          kelas: document.getElementById('jurnal-kelas').value,
+          mapel: document.getElementById('jurnal-mapel').value,
+          jamKe: document.getElementById('jurnal-jam').value,
+          materi: document.getElementById('jurnal-materi').value,
+          catatan: document.getElementById('jurnal-catatan').value
+        },
+        currentUser: currentUser
+      };
+
+      try {
+        await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
+        closeModalJurnal();
+        fetchData();
+      } catch (err) {
+        alert('Gagal menyimpan data jurnal mengajar!');
       }
     }
 
