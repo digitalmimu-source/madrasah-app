@@ -27,208 +27,246 @@
     }
   </script>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col md:flex-row">
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
 
-  <!-- Sidebar Navigasi -->
-  <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between shadow-xl">
-    <div>
-      <!-- Header Brand -->
-      <div class="p-6 flex items-center gap-3 border-b border-slate-800">
-        <div class="p-2 bg-brand-500 text-white rounded-xl shadow-lg">
-          <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+  <!-- ================= LAYOUT LOGIN ================= -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-900 p-4">
+    <div class="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl space-y-6">
+      <div class="text-center space-y-2">
+        <div class="inline-flex p-3 bg-brand-50 text-brand-600 rounded-2xl mb-2">
+          <i data-lucide="graduation-cap" class="w-8 h-8"></i>
         </div>
+        <h2 class="text-2xl font-bold text-slate-800">MI Madinatul Ulum</h2>
+        <p class="text-xs text-slate-500">Silakan masuk menggunakan akun Anda</p>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="space-y-4">
         <div>
-          <h1 class="font-bold text-white text-base leading-tight">MI Madinatul Ulum</h1>
-          <p class="text-xs text-brand-500 font-medium">Sistem Terpadu</p>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Username / NIP</label>
+          <div class="relative">
+            <i data-lucide="user" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <input type="text" id="login-username" required placeholder="Masukkan username" class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
         </div>
-      </div>
 
-      <!-- Menu Navigasi -->
-      <nav class="p-4 space-y-1">
-        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-brand-500 text-white shadow-md shadow-brand-500/20">
-          <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
-        </button>
-        <button onclick="switchTab('siswa')" id="nav-siswa" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
-          <i data-lucide="users" class="w-5 h-5"></i> Data Siswa
-        </button>
-        <button onclick="switchTab('guru')" id="nav-guru" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
-          <i data-lucide="user-check" class="w-5 h-5"></i> Data Guru
-        </button>
-        <button onclick="switchTab('jadwal')" id="nav-jadwal" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
-          <i data-lucide="calendar" class="w-5 h-5"></i> Jadwal Pelajaran
-        </button>
-        <button onclick="switchTab('absensi')" id="nav-absensi" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
-          <i data-lucide="clipboard-check" class="w-5 h-5"></i> Absensi
-        </button>
-        <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
-          <i data-lucide="settings" class="w-5 h-5"></i> Status Koneksi
-        </button>
-      </nav>
-    </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 mb-1">Password</label>
+          <div class="relative">
+            <i data-lucide="lock" class="w-4 h-4 text-slate-400 absolute left-3 top-3"></i>
+            <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-9 pr-4 py-2.5 border border-slate-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+          </div>
+        </div>
 
-    <!-- User Profile & Status -->
-    <div class="p-4 border-t border-slate-800">
-      <div class="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl">
-        <div class="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center font-bold text-white text-sm">
-          A
-        </div>
-        <div class="overflow-hidden">
-          <p class="text-xs font-semibold text-white truncate">Administrator</p>
-          <p class="text-[10px] text-brand-400 font-medium">● Terhubung Otomatis</p>
-        </div>
+        <button type="submit" class="w-full py-3 bg-brand-600 text-white font-bold rounded-xl hover:bg-brand-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-600/30">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Masuk Aplikasi
+        </button>
+      </form>
+
+      <!-- Info Akun Bawaan (Demo) -->
+      <div class="p-3 bg-slate-50 rounded-2xl border border-slate-200 text-[11px] text-slate-500 space-y-1">
+        <p class="font-bold text-slate-700">Akses Pengguna (Default):</p>
+        <p>• <strong>Admin:</strong> Username: <code class="text-brand-600 font-bold">admin</code> | Pass: <code class="text-brand-600 font-bold">admin123</code></p>
+        <p>• <strong>Guru:</strong> Username: <code class="text-brand-600 font-bold">guru</code> | Pass: <code class="text-brand-600 font-bold">guru123</code></p>
       </div>
     </div>
-  </aside>
+  </div>
 
-  <!-- Content Area Utama -->
-  <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
-    <!-- Topbar Header -->
-    <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+  <!-- ================= LAYOUT UTAMA APLIKASI ================= -->
+  <div id="main-app" class="hidden min-h-screen flex flex-col md:flex-row">
+
+    <!-- Sidebar Navigasi -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex-shrink-0 flex flex-col justify-between shadow-xl">
       <div>
-        <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard Utama</h2>
-        <p class="text-xs text-slate-500">MI Madinatul Ulum Pasinan Integration</p>
+        <!-- Header Brand -->
+        <div class="p-6 flex items-center gap-3 border-b border-slate-800">
+          <div class="p-2 bg-brand-500 text-white rounded-xl shadow-lg">
+            <i data-lucide="graduation-cap" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-white text-base leading-tight">MI Madinatul Ulum</h1>
+            <p class="text-xs text-brand-500 font-medium">Sistem Terpadu</p>
+          </div>
+        </div>
+
+        <!-- Menu Navigasi -->
+        <nav class="p-4 space-y-1">
+          <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition-all bg-brand-500 text-white shadow-md shadow-brand-500/20">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i> Dashboard
+          </button>
+          
+          <button onclick="switchTab('siswa')" id="nav-siswa" class="nav-btn role-admin-only w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+            <i data-lucide="users" class="w-5 h-5"></i> Data Siswa
+          </button>
+          
+          <button onclick="switchTab('guru')" id="nav-guru" class="nav-btn role-admin-only w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+            <i data-lucide="user-check" class="w-5 h-5"></i> Data Guru
+          </button>
+          
+          <button onclick="switchTab('jadwal')" id="nav-jadwal" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+            <i data-lucide="calendar" class="w-5 h-5"></i> Jadwal Pelajaran
+          </button>
+          
+          <button onclick="switchTab('absensi')" id="nav-absensi" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+            <i data-lucide="clipboard-check" class="w-5 h-5"></i> Absensi
+          </button>
+          
+          <button onclick="switchTab('settings')" id="nav-settings" class="nav-btn role-admin-only w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm text-slate-400 hover:bg-slate-800 hover:text-slate-200 transition-all">
+            <i data-lucide="settings" class="w-5 h-5"></i> Status Koneksi
+          </button>
+        </nav>
       </div>
 
-      <div class="flex items-center gap-3">
-        <button onclick="fetchData()" class="flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-600 hover:bg-brand-100 font-medium text-sm rounded-xl transition-all border border-brand-200">
-          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Synchronize Data
+      <!-- User Profile & Tombol Logout -->
+      <div class="p-4 border-t border-slate-800 space-y-2">
+        <div class="flex items-center gap-3 px-3 py-2 bg-slate-800/50 rounded-xl">
+          <div id="user-avatar" class="w-9 h-9 rounded-full bg-brand-600 flex items-center justify-center font-bold text-white text-sm">
+            A
+          </div>
+          <div class="overflow-hidden flex-1">
+            <p id="user-display-name" class="text-xs font-semibold text-white truncate">Administrator</p>
+            <p id="user-display-role" class="text-[10px] text-brand-400 font-medium">Admin</p>
+          </div>
+        </div>
+
+        <!-- Tombol Logout -->
+        <button onclick="handleLogout()" class="w-full flex items-center justify-center gap-2 px-3 py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 rounded-xl text-xs font-medium transition-all">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Keluar (Logout)
         </button>
       </div>
-    </header>
+    </aside>
 
-    <!-- Body View Section -->
-    <div class="p-6 space-y-6">
-
-      <!-- Status Indicator -->
-      <div id="status-banner" class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center justify-between">
-        <div class="flex items-center gap-3 text-emerald-800 text-sm">
-          <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
-          <span><strong>Koneksi Otomatis Aktif!</strong> Terhubung ke database Google Sheets MI Madinatul Ulum.</span>
-        </div>
-        <span id="loading-indicator" class="hidden text-xs font-medium text-emerald-700 animate-pulse">Memuat data...</span>
-      </div>
-
-      <!-- Tab: Dashboard -->
-      <section id="tab-dashboard" class="tab-content space-y-6">
-        <!-- Stat Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-blue-50 text-blue-600 rounded-xl">
-              <i data-lucide="users" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Siswa</p>
-              <h3 id="stat-siswa" class="text-2xl font-bold text-slate-800">0</h3>
-            </div>
-          </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
-              <i data-lucide="user-check" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Guru</p>
-              <h3 id="stat-guru" class="text-2xl font-bold text-slate-800">0</h3>
-            </div>
-          </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
-              <i data-lucide="calendar" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jadwal Aktif</p>
-              <h3 id="stat-jadwal" class="text-2xl font-bold text-slate-800">0</h3>
-            </div>
-          </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
-            <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
-              <i data-lucide="clipboard-check" class="w-6 h-6"></i>
-            </div>
-            <div>
-              <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Absensi Hari Ini</p>
-              <h3 id="stat-absensi" class="text-2xl font-bold text-slate-800">0</h3>
-            </div>
-          </div>
+    <!-- Content Area Utama -->
+    <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+      <header class="bg-white border-b border-slate-200 px-6 py-4 flex justify-between items-center sticky top-0 z-10">
+        <div>
+          <h2 id="page-title" class="text-xl font-bold text-slate-800">Dashboard Utama</h2>
+          <p class="text-xs text-slate-500">MI Madinatul Ulum Pasinan Integration</p>
         </div>
 
-        <!-- System Activity Log -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
-          <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
-            <i data-lucide="activity" class="w-5 h-5 text-brand-600"></i> Log Aktivitas Terbaru
-          </h3>
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm border-collapse">
-              <thead>
-                <tr class="text-slate-400 text-xs uppercase border-b border-slate-100">
-                  <th class="py-3 px-4">Waktu</th>
-                  <th class="py-3 px-4">Pengguna</th>
-                  <th class="py-3 px-4">Role</th>
-                  <th class="py-3 px-4">Aksi</th>
-                  <th class="py-3 px-4">Detail</th>
-                </tr>
-              </thead>
-              <tbody id="log-table-body" class="divide-y divide-slate-100 text-slate-600">
-                <tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada log aktivitas.</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- Tab: Siswa -->
-      <section id="tab-siswa" class="tab-content space-y-4 hidden">
-        <div class="flex justify-between items-center">
-          <h3 class="text-lg font-bold text-slate-800">Daftar Data Siswa</h3>
-          <button onclick="openModalSiswa()" class="px-4 py-2 bg-brand-600 text-white font-medium text-sm rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2">
-            <i data-lucide="plus" class="w-4 h-4"></i> Tambah Siswa
+        <div class="flex items-center gap-3">
+          <button onclick="fetchData()" class="flex items-center gap-2 px-4 py-2 bg-brand-50 text-brand-600 hover:bg-brand-100 font-medium text-sm rounded-xl transition-all border border-brand-200">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i> Synchronize Data
           </button>
         </div>
+      </header>
 
-        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm">
-              <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
-                <tr>
-                  <th class="py-3.5 px-4">ID</th>
-                  <th class="py-3.5 px-4">NIS / NISN</th>
-                  <th class="py-3.5 px-4">Nama Siswa</th>
-                  <th class="py-3.5 px-4">Kelas</th>
-                  <th class="py-3.5 px-4">L/P</th>
-                  <th class="py-3.5 px-4">Wali</th>
-                  <th class="py-3.5 px-4 text-center">Aksi</th>
-                </tr>
-              </thead>
-              <tbody id="siswa-table-body" class="divide-y divide-slate-100 text-slate-600">
-                <tr><td colspan="7" class="text-center py-6 text-slate-400">Memuat data siswa...</td></tr>
-              </tbody>
-            </table>
+      <div class="p-6 space-y-6">
+        <!-- Status Indicator -->
+        <div id="status-banner" class="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl flex items-center justify-between">
+          <div class="flex items-center gap-3 text-emerald-800 text-sm">
+            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600"></i>
+            <span><strong>Koneksi Otomatis Aktif!</strong> Terhubung ke database Google Sheets MI Madinatul Ulum.</span>
           </div>
+          <span id="loading-indicator" class="hidden text-xs font-medium text-emerald-700 animate-pulse">Memuat data...</span>
         </div>
-      </section>
 
-      <!-- Tab: Status Koneksi / Pengaturan -->
-      <section id="tab-settings" class="tab-content space-y-6 hidden">
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm max-w-2xl">
-          <h3 class="font-bold text-slate-800 text-lg mb-2">Informasi Integrasi Backend</h3>
-          <p class="text-xs text-slate-500 mb-4">Aplikasi terhubung secara otomatis ke Google Apps Script di bawah ini:</p>
-          
-          <div class="space-y-4">
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Web App URL (Terhubung)</label>
-              <input type="url" id="web-app-url" readonly class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-mono focus:outline-none">
+        <!-- Tab: Dashboard -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+              <div class="p-3 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="users" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Siswa</p>
+                <h3 id="stat-siswa" class="text-2xl font-bold text-slate-800">0</h3>
+              </div>
             </div>
-            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-center gap-2">
-              <i data-lucide="info" class="w-4 h-4 text-blue-600 flex-shrink-0"></i>
-              <span>URL terpasang secara permanen. Pengguna atau guru lain tidak perlu melakukan pengaturan ulang.</span>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+              <div class="p-3 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="user-check" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Guru</p>
+                <h3 id="stat-guru" class="text-2xl font-bold text-slate-800">0</h3>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+              <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl"><i data-lucide="calendar" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jadwal Aktif</p>
+                <h3 id="stat-jadwal" class="text-2xl font-bold text-slate-800">0</h3>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center gap-4">
+              <div class="p-3 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="clipboard-check" class="w-6 h-6"></i></div>
+              <div>
+                <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Absensi Hari Ini</p>
+                <h3 id="stat-absensi" class="text-2xl font-bold text-slate-800">0</h3>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
 
-    </div>
-  </main>
+          <!-- Log Activity -->
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-lg mb-4 flex items-center gap-2">
+              <i data-lucide="activity" class="w-5 h-5 text-brand-600"></i> Log Aktivitas Terbaru
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm border-collapse">
+                <thead>
+                  <tr class="text-slate-400 text-xs uppercase border-b border-slate-100">
+                    <th class="py-3 px-4">Waktu</th>
+                    <th class="py-3 px-4">Pengguna</th>
+                    <th class="py-3 px-4">Role</th>
+                    <th class="py-3 px-4">Aksi</th>
+                    <th class="py-3 px-4">Detail</th>
+                  </tr>
+                </thead>
+                <tbody id="log-table-body" class="divide-y divide-slate-100 text-slate-600">
+                  <tr><td colspan="5" class="text-center py-6 text-slate-400">Belum ada log aktivitas.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab: Siswa -->
+        <section id="tab-siswa" class="tab-content space-y-4 hidden">
+          <div class="flex justify-between items-center">
+            <h3 class="text-lg font-bold text-slate-800">Daftar Data Siswa</h3>
+            <button onclick="openModalSiswa()" class="px-4 py-2 bg-brand-600 text-white font-medium text-sm rounded-xl hover:bg-brand-700 transition-all flex items-center gap-2">
+              <i data-lucide="plus" class="w-4 h-4"></i> Tambah Siswa
+            </button>
+          </div>
+
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-sm">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-xs font-semibold">
+                  <tr>
+                    <th class="py-3.5 px-4">ID</th>
+                    <th class="py-3.5 px-4">NIS / NISN</th>
+                    <th class="py-3.5 px-4">Nama Siswa</th>
+                    <th class="py-3.5 px-4">Kelas</th>
+                    <th class="py-3.5 px-4">L/P</th>
+                    <th class="py-3.5 px-4">Wali</th>
+                    <th class="py-3.5 px-4 text-center">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="siswa-table-body" class="divide-y divide-slate-100 text-slate-600">
+                  <tr><td colspan="7" class="text-center py-6 text-slate-400">Memuat data siswa...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- Tab: Status Koneksi -->
+        <section id="tab-settings" class="tab-content space-y-6 hidden">
+          <div class="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-sm max-w-2xl">
+            <h3 class="font-bold text-slate-800 text-lg mb-2">Informasi Integrasi Backend</h3>
+            <p class="text-xs text-slate-500 mb-4">Aplikasi terhubung secara otomatis ke Google Apps Script di bawah ini:</p>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Web App URL (Terhubung)</label>
+                <input type="url" id="web-app-url" readonly class="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-600 text-xs font-mono focus:outline-none">
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
 
   <!-- Modal Tambah/Edit Siswa -->
   <div id="modal-siswa" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
@@ -276,18 +314,80 @@
 
   <!-- JavaScript Logic -->
   <script>
-    // URL Web App Google Apps Script Otomatis
     const DEFAULT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyFOXhhHjJaU5XA5QyrcLhKpvcWHkGMkTai5-4_L6LKiecmzzAahgdNYzeUznOURSjusw/exec';
     let WEB_APP_URL = DEFAULT_WEB_APP_URL;
     let globalData = { siswa: [], guru: [], jadwal: [], absensi: [], log: [] };
+    let currentUser = null;
 
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       document.getElementById('web-app-url').value = WEB_APP_URL;
-      fetchData(); // Otomatis ambil data saat halaman pertama kali dibuka
+      checkSession();
     });
 
-    // Switch Nav Tab
+    // SISTEM AUTENTIKASI (LOGIN / LOGOUT)
+    function checkSession() {
+      const session = localStorage.getItem('madrasah_user_session');
+      if (session) {
+        currentUser = JSON.parse(session);
+        showAppScreen();
+      } else {
+        showLoginScreen();
+      }
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-username').value.trim();
+      const p = document.getElementById('login-password').value.trim();
+
+      // Cek Pengguna (Demo Hardcoded/Pencocokan Sederhana)
+      if (u === 'admin' && p === 'admin123') {
+        currentUser = { username: 'admin', nama: 'Administrator', role: 'Admin' };
+      } else if (u === 'guru' && p === 'guru123') {
+        currentUser = { username: 'guru', nama: 'Bapak/Ibu Guru', role: 'Guru' };
+      } else {
+        alert('Username atau Password salah!');
+        return;
+      }
+
+      localStorage.setItem('madrasah_user_session', JSON.stringify(currentUser));
+      showAppScreen();
+    }
+
+    function handleLogout() {
+      if (confirm('Apakah Anda yakin ingin keluar?')) {
+        localStorage.removeItem('madrasah_user_session');
+        currentUser = null;
+        showLoginScreen();
+      }
+    }
+
+    function showLoginScreen() {
+      document.getElementById('login-screen').classList.remove('hidden');
+      document.getElementById('main-app').classList.add('hidden');
+    }
+
+    function showAppScreen() {
+      document.getElementById('login-screen').classList.add('hidden');
+      document.getElementById('main-app').classList.remove('hidden');
+
+      // Update Info User
+      document.getElementById('user-display-name').innerText = currentUser.nama;
+      document.getElementById('user-display-role').innerText = currentUser.role;
+      document.getElementById('user-avatar').innerText = currentUser.nama.charAt(0).toUpperCase();
+
+      // Batasi UI berdasarkan Role
+      if (currentUser.role === 'Guru') {
+        document.querySelectorAll('.role-admin-only').forEach(el => el.classList.add('hidden'));
+      } else {
+        document.querySelectorAll('.role-admin-only').forEach(el => el.classList.remove('hidden'));
+      }
+
+      fetchData();
+    }
+
+    // SWITCH TAB MENU
     function switchTab(tabName) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
       document.querySelectorAll('.nav-btn').forEach(el => {
@@ -313,7 +413,7 @@
       document.getElementById('page-title').innerText = titles[tabName] || 'Dashboard';
     }
 
-    // Fetch All Data (doGet)
+    // FETCH DATA backend (.gs)
     async function fetchData() {
       const loader = document.getElementById('loading-indicator');
       if (loader) loader.classList.remove('hidden');
@@ -330,13 +430,11 @@
         }
       } catch (err) {
         console.error("Gagal mengambil data:", err);
-        alert("Gagal terhubung ke Google Spreadsheet Web App!");
       } finally {
         if (loader) loader.classList.add('hidden');
       }
     }
 
-    // Render Stats & UI
     function renderDashboardStats() {
       document.getElementById('stat-siswa').innerText = (globalData.siswa || []).length;
       document.getElementById('stat-guru').innerText = (globalData.guru || []).length;
@@ -387,11 +485,10 @@
       `).join('');
     }
 
-    // Modal Control
+    // MODAL HANDLERS
     function openModalSiswa() { document.getElementById('modal-siswa').classList.remove('hidden'); }
     function closeModalSiswa() { document.getElementById('modal-siswa').classList.add('hidden'); }
 
-    // Save Student (doPost)
     async function handleSaveSiswa(e) {
       e.preventDefault();
 
@@ -407,14 +504,11 @@
           namaWali: document.getElementById('siswa-wali').value,
           status: 'Aktif'
         },
-        currentUser: { username: 'admin', nama: 'Administrator', role: 'Admin' }
+        currentUser: currentUser
       };
 
       try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+        await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
         closeModalSiswa();
         fetchData();
       } catch (err) {
@@ -422,7 +516,6 @@
       }
     }
 
-    // Delete Student
     async function handleDeleteSiswa(id) {
       if (!confirm(`Yakin ingin menghapus data siswa ID ${id}?`)) return;
       
@@ -430,14 +523,11 @@
         action: 'delete',
         sheet: 'SISWA',
         id: id,
-        currentUser: { username: 'admin', nama: 'Administrator', role: 'Admin' }
+        currentUser: currentUser
       };
 
       try {
-        await fetch(WEB_APP_URL, {
-          method: 'POST',
-          body: JSON.stringify(payload)
-        });
+        await fetch(WEB_APP_URL, { method: 'POST', body: JSON.stringify(payload) });
         fetchData();
       } catch (err) {
         alert('Gagal menghapus data!');
