@@ -146,7 +146,7 @@
               <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                   <tr>
-                    <th class="px-6 py-3 text-left font-medium text-gray-500">NIS</th>
+                    <th class="px-6 py-3 text-left font-medium text-gray-500">NISN</th>
                     <th class="px-6 py-3 text-left font-medium text-gray-500">Nama Lengkap</th>
                     <th class="px-6 py-3 text-left font-medium text-gray-500">Kelas</th>
                     <th class="px-6 py-3 text-left font-medium text-gray-500">L/P</th>
@@ -338,11 +338,11 @@
 
     // Render Data to Tables
     function renderTables() {
-      // 1. Siswa
+      // 1. Siswa (Mendukung data nisn atau nis lama)
       const tSiswa = document.getElementById('tableSiswa');
       tSiswa.innerHTML = globalData.siswa.map(item => `
         <tr>
-          <td class="px-6 py-4">${item.nis || '-'}</td>
+          <td class="px-6 py-4">${item.nisn || item.nis || '-'}</td>
           <td class="px-6 py-4 font-medium">${item.nama || '-'}</td>
           <td class="px-6 py-4">${item.kelas || '-'}</td>
           <td class="px-6 py-4">${item.jenisKelamin || '-'}</td>
@@ -432,7 +432,7 @@
 
       const schemas = {
         siswa: [
-          { name: 'nis', label: 'NIS', type: 'text' },
+          { name: 'nisn', label: 'NISN', type: 'text' },
           { name: 'nama', label: 'Nama Siswa', type: 'text' },
           { name: 'kelas', label: 'Kelas', type: 'text' },
           { name: 'jenisKelamin', label: 'Jenis Kelamin', type: 'select', options: ['L', 'P'] },
