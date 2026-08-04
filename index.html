@@ -894,7 +894,7 @@
                         <button
                           type="button"
                           onClick={() => handleDeleteJournal(j.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1"
+                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                         >
                           <Icon name="Trash2" size={16} />
                         </button>
@@ -1203,6 +1203,13 @@
         }
       };
 
+      const handleDeleteSingleStudent = (studentId, studentName) => {
+        if (window.confirm(`Apakah Anda yakin ingin menghapus data siswa "${studentName}"?`)) {
+          setStudents(students.filter(s => s.id !== studentId));
+          if (onSync) onSync();
+        }
+      };
+
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -1254,18 +1261,27 @@
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredStudents.map((s) => (
-              <div key={s.id} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-xs hover:shadow-md transition space-y-4 flex flex-col justify-between">
+              <div key={s.id} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-xs hover:shadow-md transition space-y-4 flex flex-col justify-between relative group">
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] inline-block mb-1">{s.class}</span>
-                    <h4 className="font-bold text-slate-800 text-sm">{s.name}</h4>
+                    <h4 className="font-bold text-slate-800 text-sm pr-6">{s.name}</h4>
                     <p className="text-[11px] font-mono text-slate-400 mt-0.5">NISN: {s.nisn}</p>
                   </div>
                   <SimpleQRCodeSVG value={s.nisn} size={64} />
                 </div>
 
                 <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400">QR Code Murni (2000px)</span>
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteSingleStudent(s.id, s.name)}
+                    className="p-1.5 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-lg transition cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+                    title="Hapus Data Siswa"
+                  >
+                    <Icon name="Trash2" size={14} />
+                    <span>Hapus</span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => handleDownloadSingleHD(s)}
@@ -1482,7 +1498,7 @@
                         <button
                           type="button"
                           onClick={() => handleDeleteTeacher(t.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1"
+                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                           title="Hapus Akun Guru"
                         >
                           <Icon name="Trash2" size={16} />
@@ -1878,6 +1894,14 @@
         }
       };
 
+      const handleClearAllStudents = () => {
+        if (window.confirm('⚠️ PERINGATAN: Apakah Anda yakin ingin MENGHAPUS SEMUA DATA SISWA? Tindakan ini tidak dapat dibatalkan.')) {
+          setStudents([]);
+          alert('✅ Seluruh data siswa berhasil dihapus.');
+          if (onSync) onSync();
+        }
+      };
+
       const handleAddSingleTeacher = (e) => {
         e.preventDefault();
         if (!teacherForm.name || !teacherForm.username || !teacherForm.password) return;
@@ -2029,9 +2053,15 @@
                     <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Import Masal Siswa (Paste CSV)</h3>
                     <textarea value={bulkStudentPaste} onChange={(e) => setBulkStudentPaste(e.target.value)} rows={5} placeholder="Ahmad Fauzi,0051234568,X-A,L" className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none mt-2"></textarea>
                   </div>
-                  <button type="button" onClick={handleImportBulkStudents} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs cursor-pointer">
-                    Proses Import Masal Siswa
-                  </button>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={handleClearAllStudents} className="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 py-2.5 px-4 rounded-xl font-bold text-xs cursor-pointer flex items-center gap-1">
+                      <Icon name="Trash2" size={14} />
+                      <span>Hapus Semua</span>
+                    </button>
+                    <button type="button" onClick={handleImportBulkStudents} className="flex-1 py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs cursor-pointer text-xs">
+                      Proses Import Masal Siswa
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -2079,7 +2109,7 @@
                     <p className="text-[11px] text-slate-500 mt-1">Format: Nama, NIP, Username, Password, Mapel, Role (guru/admin)</p>
                     <textarea value={bulkTeacherPaste} onChange={(e) => setBulkTeacherPaste(e.target.value)} rows={5} placeholder="Ustadz Mansur,19900101,mansur,123456,Fiqih,guru&#10;Ustadzah Nur,19920202,nur,123456,SKI,guru" className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none mt-2"></textarea>
                   </div>
-                  <button type="button" onClick={handleImportBulkTeachers} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs cursor-pointer">
+                  <button type="button" onClick={handleImportBulkTeachers} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs cursor-pointer text-xs">
                     Proses Import Masal Guru
                   </button>
                 </div>
