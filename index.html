@@ -1069,7 +1069,9 @@
       const [searchTerm, setSearchTerm] = useState('');
       const [selectedClass, setSelectedClass] = useState('Semua');
       const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+      const [isImportModalOpen, setIsImportModalOpen] = useState(false);
       const [formData, setFormData] = useState({ name: '', nisn: '', class: '1', gender: 'L' });
+      const [pasteData, setPasteData] = useState('');
 
       const filtered = students.filter(s => {
         const matchSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm);
@@ -1086,16 +1088,72 @@
         if (onSync) onSync();
       };
 
+      const handleImportStudents = () => {
+        if (!pasteData.trim()) return;
+        const lines = pasteData.trim().split('\n');
+        const newStudents = [];
+        lines.forEach((line, idx) => {
+          const parts = line.split(/,|\t/);
+          if (parts.length >= 2) {
+            const name = parts[0]?.trim();
+            const nisn = parts[1]?.trim();
+            let c = parts[2]?.trim() || '1';
+            c = c.replace(/kelas\s*/i, '').trim();
+            if (!CLASS_LIST.includes(c)) c = '1';
+            const gender = parts[3]?.trim().toUpperCase() === 'P' ? 'P' : 'L';
+            if (name && nisn && !name.toLowerCase().includes('nama')) {
+              newStudents.push({
+                id: Date.now() + idx,
+                name,
+                nisn,
+                class: c,
+                gender
+              });
+            }
+          }
+        });
+        if (newStudents.length > 0) {
+          setStudents(prev => [...prev, ...newStudents]);
+          setPasteData('');
+          setIsImportModalOpen(false);
+          if (onSync) onSync();
+        }
+      };
+
+      const handleDownloadTemplate = () => {
+        const csvContent = "Nama Lengkap,NISN,Kelas (1-6),Jenis Kelamin (L/P)\nAhmad Abdullah,0051234568,1,L\nSiti Rahma,0051234569,2,P";
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Template_Import_Siswa_SIMADRASAH.csv';
+        link.click();
+      };
+
+      const handleDeleteStudent = (id) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus data siswa ini?')) {
+          setStudents(students.filter(s => s.id !== id));
+          if (onSync) onSync();
+        }
+      };
+
       return (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 text-white flex justify-between items-center">
+          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 text-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
               <h2 className="text-2xl font-black">Data & Kartu Siswa (Kelas 1 - 6)</h2>
               <p className="text-xs text-emerald-100 mt-1">Unduh QR Code HD Murni 2000px × 2000px berbasis NISN.</p>
             </div>
-            <button onClick={() => setIsAddModalOpen(true)} className="bg-white text-emerald-800 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer">
-              + Tambah Siswa
-            </button>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-emerald-700 hover:bg-emerald-600 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs cursor-pointer flex items-center gap-1.5 border border-emerald-600"
+              >
+                <Icon name="Upload" size={14} /> Import Massal
+              </button>
+              <button onClick={() => setIsAddModalOpen(true)} className="bg-white text-emerald-800 hover:bg-emerald-50 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer shadow-xs">
+                + Tambah Siswa
+              </button>
+            </div>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-3">
@@ -1124,18 +1182,27 @@
                   <h4 className="font-bold text-sm text-slate-800 mt-1">{s.name}</h4>
                   <p className="text-xs font-mono text-slate-400">NISN: {s.nisn}</p>
                 </div>
-                <button
-                  onClick={async () => {
-                    const dataUrl = await generateHDQRCodeCanvas(s);
-                    const link = document.createElement('a');
-                    link.download = `QR_${s.name}_${s.nisn}_2000px.png`;
-                    link.href = dataUrl;
-                    link.click();
-                  }}
-                  className="bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-emerald-800 cursor-pointer"
-                >
-                  PNG HD
-                </button>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    onClick={async () => {
+                      const dataUrl = await generateHDQRCodeCanvas(s);
+                      const link = document.createElement('a');
+                      link.download = `QR_${s.name}_${s.nisn}_2000px.png`;
+                      link.href = dataUrl;
+                      link.click();
+                    }}
+                    className="bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-xl hover:bg-emerald-800 cursor-pointer"
+                  >
+                    PNG HD
+                  </button>
+                  <button
+                    onClick={() => handleDeleteStudent(s.id)}
+                    className="bg-rose-50 text-rose-600 hover:bg-rose-100 p-1.5 rounded-xl transition cursor-pointer"
+                    title="Hapus Siswa"
+                  >
+                    <Icon name="Trash2" size={16} />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1167,18 +1234,144 @@
               </div>
             </div>
           )}
+
+          {isImportModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white max-w-lg w-full p-6 rounded-3xl space-y-4 shadow-2xl">
+                <div className="flex justify-between items-center border-b pb-3">
+                  <h3 className="font-bold text-base flex items-center gap-2 text-slate-800">
+                    <Icon name="Upload" className="text-emerald-700" size={18} /> Import Massal Data Siswa
+                  </h3>
+                  <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <Icon name="X" size={18} />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Tempelkan (paste) data baris CSV atau salinan dari Ms. Excel.<br/>
+                  <strong>Format per baris:</strong> <code className="bg-slate-100 font-mono px-1 rounded">Nama Lengkap, NISN, Kelas (1-6), Jenis Kelamin (L/P)</code>
+                </p>
+                <textarea
+                  value={pasteData}
+                  onChange={e => setPasteData(e.target.value)}
+                  rows={6}
+                  placeholder={"Ahmad Abdullah, 0051234568, 1, L\nSiti Rahma, 0051234569, 2, P"}
+                  className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                />
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleDownloadTemplate}
+                    className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1"
+                  >
+                    <Icon name="FileSpreadsheet" size={14} /> Unduh Template CSV
+                  </button>
+                  <div className="flex gap-2 w-full sm:w-auto justify-end">
+                    <button type="button" onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs cursor-pointer">Batal</button>
+                    <button type="button" onClick={handleImportStudents} className="px-5 py-2 bg-emerald-800 text-white rounded-xl font-bold text-xs hover:bg-emerald-900 shadow-md cursor-pointer">Proses Import</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
 
     function GuruModule({ teachers, setTeachers, currentUser, onSync }) {
+      const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+      const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+      const [formData, setFormData] = useState({ nip: '', name: '', username: '', password: '123456', subject: SUBJECT_LIST[0], role: 'guru' });
+      const [pasteData, setPasteData] = useState('');
+
+      const handleDeleteTeacher = (id) => {
+        if (teachers.length <= 1) {
+          alert('Minimal harus ada 1 akun pengajar!');
+          return;
+        }
+        if (window.confirm('Apakah Anda yakin ingin menghapus akun guru ini?')) {
+          setTeachers(teachers.filter(t => t.id !== id));
+          if (onSync) onSync();
+        }
+      };
+
+      const handleAddTeacher = (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.username) return;
+        const newTeacher = { id: `G${Date.now()}`, ...formData };
+        setTeachers([...teachers, newTeacher]);
+        setIsAddModalOpen(false);
+        setFormData({ nip: '', name: '', username: '', password: '123456', subject: SUBJECT_LIST[0], role: 'guru' });
+        if (onSync) onSync();
+      };
+
+      const handleImportTeachers = () => {
+        if (!pasteData.trim()) return;
+        const lines = pasteData.trim().split('\n');
+        const newTeachers = [];
+        lines.forEach((line, idx) => {
+          const parts = line.split(/,|\t/);
+          if (parts.length >= 2) {
+            const name = parts[0]?.trim();
+            const nip = parts[1]?.trim() || '';
+            const username = parts[2]?.trim() || `guru_${Date.now()}_${idx}`;
+            const password = parts[3]?.trim() || '123456';
+            const subject = parts[4]?.trim() || SUBJECT_LIST[0];
+            const role = parts[5]?.trim().toLowerCase() === 'admin' ? 'admin' : 'guru';
+
+            if (name && !name.toLowerCase().includes('nama')) {
+              newTeachers.push({
+                id: `G${Date.now()}_${idx}`,
+                name,
+                nip,
+                username,
+                password,
+                subject,
+                role
+              });
+            }
+          }
+        });
+        if (newTeachers.length > 0) {
+          setTeachers(prev => [...prev, ...newTeachers]);
+          setPasteData('');
+          setIsImportModalOpen(false);
+          if (onSync) onSync();
+        }
+      };
+
+      const handleDownloadTemplate = () => {
+        const csvContent = "Nama Lengkap & Gelar,NIP,Username,Password,Mata Pelajaran,Peran (guru/admin)\nUstadz Hasan M.Pd,199001012020011001,hasan,123456,Fikih,guru\nSiti Khadijah S.Pd,199202022020012002,khadijah,123456,Akidah Akhlak,guru";
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Template_Import_Guru_SIMADRASAH.csv';
+        link.click();
+      };
+
       return (
         <div className="space-y-6">
-          <div className="bg-emerald-900 text-white p-6 rounded-3xl">
-            <h2 className="font-black text-2xl">Data Guru & Akun Akses</h2>
-            <p className="text-xs text-emerald-200 mt-1">Satu Guru Satu Akun Pengajar</p>
+          <div className="bg-emerald-900 text-white p-6 rounded-3xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h2 className="font-black text-2xl">Data Guru & Akun Akses</h2>
+              <p className="text-xs text-emerald-200 mt-1">Satu Guru Satu Akun Pengajar</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-emerald-800 hover:bg-emerald-700 text-white px-3.5 py-2.5 rounded-xl font-bold text-xs cursor-pointer flex items-center gap-1.5 border border-emerald-700"
+              >
+                <Icon name="Upload" size={14} /> Import Massal
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="bg-white text-emerald-900 px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer hover:bg-emerald-50 transition flex items-center gap-1.5 shadow-xs"
+              >
+                + Tambah Guru
+              </button>
+            </div>
           </div>
-          <div className="bg-white rounded-2xl border border-slate-100 p-4">
+
+          <div className="bg-white rounded-2xl border border-slate-100 p-4 overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b font-bold text-slate-400">
@@ -1186,20 +1379,112 @@
                   <th className="p-2">Username</th>
                   <th className="p-2">Mapel</th>
                   <th className="p-2">Peran</th>
+                  <th className="p-2 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody>
                 {teachers.map(t => (
-                  <tr key={t.id} className="border-b">
-                    <td className="p-2 font-bold">{t.name}<br/><span className="text-[10px] text-slate-400">{t.nip}</span></td>
+                  <tr key={t.id} className="border-b hover:bg-slate-50 transition">
+                    <td className="p-2 font-bold">{t.name}<br/><span className="text-[10px] text-slate-400">{t.nip || '-'}</span></td>
                     <td className="p-2 font-mono">{t.username}</td>
                     <td className="p-2 font-bold text-emerald-800">{t.subject}</td>
                     <td className="p-2 uppercase font-bold text-[10px] text-emerald-700">{t.role}</td>
+                    <td className="p-2 text-right">
+                      <button
+                        onClick={() => handleDeleteTeacher(t.id)}
+                        className="bg-rose-50 text-rose-600 hover:bg-rose-100 p-1.5 rounded-xl transition cursor-pointer"
+                        title="Hapus Guru"
+                      >
+                        <Icon name="Trash2" size={16} />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+
+          {isAddModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white max-w-md w-full p-6 rounded-3xl space-y-4">
+                <h3 className="font-bold text-base">Tambah Akun Guru Baru</h3>
+                <form onSubmit={handleAddTeacher} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold mb-1">Nama Lengkap & Gelar</label>
+                    <input type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none" required />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1">NIP</label>
+                    <input type="text" value={formData.nip} onChange={e => setFormData({...formData, nip: e.target.value})} className="w-full p-2.5 border rounded-xl font-mono outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1">Username Login</label>
+                    <input type="text" value={formData.username} onChange={e => setFormData({...formData, username: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none" required />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1">Password</label>
+                    <input type="text" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none" required />
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1">Mata Pelajaran</label>
+                    <select value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none bg-white">
+                      {SUBJECT_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold mb-1">Peran Akses</label>
+                    <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none bg-white">
+                      <option value="guru">Guru</option>
+                      <option value="admin">Admin / TU</option>
+                    </select>
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <button type="button" onClick={() => setIsAddModalOpen(false)} className="px-4 py-2 bg-slate-100 rounded-xl font-bold">Batal</button>
+                    <button type="submit" className="px-5 py-2 bg-emerald-800 text-white rounded-xl font-bold">Simpan Guru</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {isImportModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 z-50 flex items-center justify-center p-4">
+              <div className="bg-white max-w-lg w-full p-6 rounded-3xl space-y-4 shadow-2xl">
+                <div className="flex justify-between items-center border-b pb-3">
+                  <h3 className="font-bold text-base flex items-center gap-2 text-slate-800">
+                    <Icon name="Upload" className="text-emerald-700" size={18} /> Import Massal Data Guru
+                  </h3>
+                  <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <Icon name="X" size={18} />
+                  </button>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Tempelkan (paste) data baris CSV atau salinan dari Ms. Excel.<br/>
+                  <strong>Format per baris:</strong> <code className="bg-slate-100 font-mono px-1 rounded">Nama Lengkap, NIP, Username, Password, Mapel, Peran (guru/admin)</code>
+                </p>
+                <textarea
+                  value={pasteData}
+                  onChange={e => setPasteData(e.target.value)}
+                  rows={6}
+                  placeholder={"Ustadz Hasan M.Pd, 199001012020011001, hasan, 123456, Fikih, guru\nSiti Khadijah S.Pd, 199202022020012002, khadijah, 123456, Akidah Akhlak, guru"}
+                  className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                />
+                <div className="flex flex-col sm:flex-row justify-between items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleDownloadTemplate}
+                    className="text-xs font-bold text-emerald-800 hover:underline flex items-center gap-1"
+                  >
+                    <Icon name="FileSpreadsheet" size={14} /> Unduh Template CSV
+                  </button>
+                  <div className="flex gap-2 w-full sm:w-auto justify-end">
+                    <button type="button" onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs cursor-pointer">Batal</button>
+                    <button type="button" onClick={handleImportTeachers} className="px-5 py-2 bg-emerald-800 text-white rounded-xl font-bold text-xs hover:bg-emerald-900 shadow-md cursor-pointer">Proses Import</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
