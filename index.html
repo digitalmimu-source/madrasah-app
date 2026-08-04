@@ -339,7 +339,6 @@
         return saved ? JSON.parse(saved) : DEFAULT_MADRASAH_INFO;
       });
 
-      // URL GAS TERBARU TERPASANG PERMANEN
       const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzodOtNQLgrO1Z08xgj9ZVPtiJfnnM1bo-ZfuO1siBBRoV-yvjvZ87nWBsCQsu2Pj8G/exec';
       const [spreadsheetUrl, setSpreadsheetUrl] = useState(() => {
         return localStorage.getItem('simadrasah_sheet_url') || DEFAULT_GAS_URL;
@@ -1325,17 +1324,115 @@
 
     function GuruModule({ teachers, setTeachers, currentUser, onSync }) {
       const [searchTerm, setSearchTerm] = useState('');
+      const [isModalOpen, setIsModalOpen] = useState(false);
+      const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+      const [pasteData, setPasteData] = useState('');
+
+      const [formData, setFormData] = useState({
+        nip: '',
+        name: '',
+        username: '',
+        password: '',
+        subject: 'Fiqih',
+        role: 'guru'
+      });
 
       const filteredTeachers = teachers.filter((t) =>
         t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        t.username.toLowerCase().includes(searchTerm.toLowerCase())
+        t.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (t.subject && t.subject.toLowerCase().includes(searchTerm.toLowerCase()))
       );
+
+      const handleAddTeacher = (e) => {
+        e.preventDefault();
+        if (!formData.name || !formData.username || !formData.password) return;
+
+        const newTeacher = {
+          id: 'G' + (teachers.length + 1) + '_' + Date.now().toString().slice(-4),
+          ...formData
+        };
+
+        setTeachers([...teachers, newTeacher]);
+        setIsModalOpen(false);
+        setFormData({
+          nip: '',
+          name: '',
+          username: '',
+          password: '',
+          subject: 'Fiqih',
+          role: 'guru'
+        });
+
+        if (onSync) onSync();
+      };
+
+      const handleImportBulkGuru = () => {
+        if (!pasteData.trim()) return;
+        const lines = pasteData.trim().split('\n');
+        const newTeachers = [];
+
+        lines.forEach((line, idx) => {
+          const parts = line.split(/,|\t/);
+          if (parts.length >= 3) {
+            const name = parts[0]?.trim();
+            const nip = parts[1]?.trim() || '';
+            const username = parts[2]?.trim();
+            const password = parts[3]?.trim() || '123456';
+            const subject = parts[4]?.trim() || 'Umum';
+            const role = parts[5]?.trim().toLowerCase() === 'admin' ? 'admin' : 'guru';
+
+            if (name && username && !name.toLowerCase().includes('nama')) {
+              newTeachers.push({
+                id: 'G_IMP_' + (Date.now() + idx),
+                nip,
+                name,
+                username,
+                password,
+                subject,
+                role
+              });
+            }
+          }
+        });
+
+        if (newTeachers.length > 0) {
+          setTeachers([...teachers, ...newTeachers]);
+          setPasteData('');
+          setIsImportModalOpen(false);
+          if (onSync) onSync();
+        }
+      };
+
+      const handleDeleteTeacher = (id) => {
+        if (window.confirm('Apakah Anda yakin ingin menghapus akun guru ini?')) {
+          setTeachers(teachers.filter(t => t.id !== id));
+          if (onSync) onSync();
+        }
+      };
 
       return (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
-            <h2 className="text-2xl sm:text-3xl font-black">Data Guru & Akun</h2>
-            <p className="text-emerald-100 text-xs sm:text-sm mt-1">Satu Guru Satu Akun Mandiri untuk Pengisian Jurnal & Nilai.</p>
+          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black">Data Guru & Akun</h2>
+              <p className="text-emerald-100 text-xs sm:text-sm mt-1">Satu Guru Satu Akun Mandiri untuk Pengisian Jurnal & Nilai.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-white/10 hover:bg-white/20 text-white font-bold px-3.5 py-2.5 rounded-xl text-xs backdrop-blur-md transition flex items-center gap-1.5 cursor-pointer border border-white/20"
+              >
+                <Icon name="Upload" size={14} /> Import Masal Guru
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="bg-white text-emerald-800 hover:bg-emerald-50 font-bold px-4 py-2.5 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Icon name="Plus" size={16} /> Tambah Guru
+              </button>
+            </div>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs">
@@ -1343,7 +1440,7 @@
               <Icon name="Search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
               <input
                 type="text"
-                placeholder="Cari nama guru atau username..."
+                placeholder="Cari nama guru, NIP, mapel, atau username..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
@@ -1361,6 +1458,7 @@
                     <th className="py-3.5 px-4">Username Login</th>
                     <th className="py-3.5 px-4">Password</th>
                     <th className="py-3.5 px-4">Peran</th>
+                    <th className="py-3.5 px-4 text-right">Aksi</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
@@ -1380,12 +1478,161 @@
                           {t.role === 'admin' ? 'Administrator' : 'Guru Pengajar'}
                         </span>
                       </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteTeacher(t.id)}
+                          className="text-slate-400 hover:text-rose-600 p-1"
+                          title="Hapus Akun Guru"
+                        >
+                          <Icon name="Trash2" size={16} />
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
+
+          {isModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
+                    <Icon name="UserCheck" className="text-emerald-700" size={20} /> Tambah Akun Guru Baru
+                  </h3>
+                  <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <Icon name="X" size={20} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleAddTeacher} className="space-y-3 text-xs">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Nama Lengkap & Gelar</label>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="Contoh: Ustadz Ahmad, M.Pd"
+                      className="w-full p-2.5 border border-slate-200 rounded-xl outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">NIP (Opsional)</label>
+                      <input
+                        type="text"
+                        value={formData.nip}
+                        onChange={(e) => setFormData({ ...formData, nip: e.target.value })}
+                        placeholder="1985..."
+                        className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Mata Pelajaran</label>
+                      <input
+                        type="text"
+                        value={formData.subject}
+                        onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                        placeholder="Fiqih, SKI, Matematika..."
+                        className="w-full p-2.5 border border-slate-200 rounded-xl outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Username Login</label>
+                      <input
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                        placeholder="username_guru"
+                        className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Kata Sandi (Password)</label>
+                      <input
+                        type="text"
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="Password123"
+                        className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Peran / Hak Akses</label>
+                    <select
+                      value={formData.role}
+                      onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                      className="w-full p-2.5 border border-slate-200 rounded-xl outline-none bg-white font-bold"
+                    >
+                      <option value="guru">Guru Pengajar</option>
+                      <option value="admin">Administrator / TU</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-2 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold">
+                      Batal
+                    </button>
+                    <button type="submit" className="px-5 py-2 bg-emerald-700 text-white rounded-xl font-bold hover:bg-emerald-800 shadow-md cursor-pointer">
+                      Simpan Guru
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {isImportModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
+                    <Icon name="Upload" className="text-emerald-700" size={20} /> Import Masal Akun Guru
+                  </h3>
+                  <button type="button" onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <Icon name="X" size={20} />
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  Tempelkan teks CSV / Excel dengan format per baris:
+                  <br />
+                  <code className="bg-slate-100 font-mono px-1.5 py-0.5 rounded text-[11px] text-slate-800">
+                    Nama, NIP, Username, Password, Mapel, Role (guru/admin)
+                  </code>
+                </p>
+
+                <textarea
+                  value={pasteData}
+                  onChange={(e) => setPasteData(e.target.value)}
+                  rows={6}
+                  placeholder="Ustadz Mansur,19900101,mansur,123456,Fiqih,guru&#10;Ustadzah Nur,19920202,nur,123456,SKI,guru"
+                  className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none"
+                ></textarea>
+
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs">
+                    Batal
+                  </button>
+                  <button type="button" onClick={handleImportBulkGuru} className="px-5 py-2 bg-emerald-700 text-white rounded-xl font-bold text-xs hover:bg-emerald-800 shadow-md cursor-pointer">
+                    Proses Import Guru
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -1584,7 +1831,9 @@
       const [activeSubTab, setActiveSubTab] = useState('identitas');
       const [infoForm, setInfoForm] = useState({ ...madrasahInfo });
       const [studentForm, setStudentForm] = useState({ name: '', nisn: '', class: 'X-A', gender: 'L' });
+      const [teacherForm, setTeacherForm] = useState({ nip: '', name: '', username: '', password: '', subject: 'Fiqih', role: 'guru' });
       const [bulkStudentPaste, setBulkStudentPaste] = useState('');
+      const [bulkTeacherPaste, setBulkTeacherPaste] = useState('');
 
       const handleSaveInfo = (e) => {
         e.preventDefault();
@@ -1629,6 +1878,45 @@
         }
       };
 
+      const handleAddSingleTeacher = (e) => {
+        e.preventDefault();
+        if (!teacherForm.name || !teacherForm.username || !teacherForm.password) return;
+        const newT = { id: 'G_' + Date.now(), ...teacherForm };
+        setTeachers([...teachers, newT]);
+        setTeacherForm({ nip: '', name: '', username: '', password: '', subject: 'Fiqih', role: 'guru' });
+        alert('✅ Guru berhasil ditambahkan!');
+        if (onSync) onSync();
+      };
+
+      const handleImportBulkTeachers = () => {
+        if (!bulkTeacherPaste.trim()) return;
+        const lines = bulkTeacherPaste.trim().split('\n');
+        const newT = [];
+
+        lines.forEach((line, idx) => {
+          const parts = line.split(/,|\t/);
+          if (parts.length >= 3) {
+            const name = parts[0]?.trim();
+            const nip = parts[1]?.trim() || '';
+            const username = parts[2]?.trim();
+            const password = parts[3]?.trim() || '123456';
+            const subject = parts[4]?.trim() || 'Umum';
+            const role = parts[5]?.trim().toLowerCase() === 'admin' ? 'admin' : 'guru';
+
+            if (name && username && !name.toLowerCase().includes('nama')) {
+              newT.push({ id: 'G_IMP_' + (Date.now() + idx), nip, name, username, password, subject, role });
+            }
+          }
+        });
+
+        if (newT.length > 0) {
+          setTeachers([...teachers, ...newT]);
+          setBulkTeacherPaste('');
+          alert(`✅ Berhasil mengimpor ${newT.length} guru baru!`);
+          if (onSync) onSync();
+        }
+      };
+
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
@@ -1654,6 +1942,15 @@
               }`}
             >
               Kelola & Import Siswa ({students.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('guru')}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeSubTab === 'guru' ? 'bg-emerald-800 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Kelola & Import Guru ({teachers.length})
             </button>
           </div>
 
@@ -1721,7 +2018,7 @@
                       <label className="block font-bold text-slate-700 mb-1">NISN</label>
                       <input type="text" value={studentForm.nisn} onChange={(e) => setStudentForm({ ...studentForm, nisn: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" required />
                     </div>
-                    <button type="submit" className="w-full py-2.5 bg-emerald-700 text-white font-bold rounded-xl shadow-xs">
+                    <button type="submit" className="w-full py-2.5 bg-emerald-700 text-white font-bold rounded-xl shadow-xs cursor-pointer">
                       + Tambah Siswa
                     </button>
                   </form>
@@ -1732,8 +2029,58 @@
                     <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Import Masal Siswa (Paste CSV)</h3>
                     <textarea value={bulkStudentPaste} onChange={(e) => setBulkStudentPaste(e.target.value)} rows={5} placeholder="Ahmad Fauzi,0051234568,X-A,L" className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none mt-2"></textarea>
                   </div>
-                  <button type="button" onClick={handleImportBulkStudents} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs">
-                    Proses Import Masal
+                  <button type="button" onClick={handleImportBulkStudents} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs cursor-pointer">
+                    Proses Import Masal Siswa
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'guru' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-xs space-y-4">
+                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Tambah Guru Tunggal</h3>
+                  <form onSubmit={handleAddSingleTeacher} className="space-y-3 text-xs">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nama Lengkap & Gelar</label>
+                      <input type="text" value={teacherForm.name} onChange={(e) => setTeacherForm({ ...teacherForm, name: e.target.value })} placeholder="Ustadz Ahmad, M.Pd" className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" required />
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">NIP (Opsional)</label>
+                        <input type="text" value={teacherForm.nip} onChange={(e) => setTeacherForm({ ...teacherForm, nip: e.target.value })} placeholder="1990..." className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Mata Pelajaran</label>
+                        <input type="text" value={teacherForm.subject} onChange={(e) => setTeacherForm({ ...teacherForm, subject: e.target.value })} placeholder="Fiqih" className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" required />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Username Login</label>
+                        <input type="text" value={teacherForm.username} onChange={(e) => setTeacherForm({ ...teacherForm, username: e.target.value })} placeholder="ahmad123" className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" required />
+                      </div>
+                      <div>
+                        <label className="block font-bold text-slate-700 mb-1">Password</label>
+                        <input type="text" value={teacherForm.password} onChange={(e) => setTeacherForm({ ...teacherForm, password: e.target.value })} placeholder="123456" className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" required />
+                      </div>
+                    </div>
+                    <button type="submit" className="w-full py-2.5 bg-emerald-700 text-white font-bold rounded-xl shadow-xs cursor-pointer">
+                      + Tambah Guru
+                    </button>
+                  </form>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-xs space-y-4 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Import Masal Guru (Paste CSV)</h3>
+                    <p className="text-[11px] text-slate-500 mt-1">Format: Nama, NIP, Username, Password, Mapel, Role (guru/admin)</p>
+                    <textarea value={bulkTeacherPaste} onChange={(e) => setBulkTeacherPaste(e.target.value)} rows={5} placeholder="Ustadz Mansur,19900101,mansur,123456,Fiqih,guru&#10;Ustadzah Nur,19920202,nur,123456,SKI,guru" className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none mt-2"></textarea>
+                  </div>
+                  <button type="button" onClick={handleImportBulkTeachers} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs cursor-pointer">
+                    Proses Import Masal Guru
                   </button>
                 </div>
               </div>
