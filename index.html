@@ -27,23 +27,42 @@
     <script type="text/babel">
     const { useState, useEffect, useRef, useMemo } = React;
 
-    // Daftar Kelas MI (Kelas 1 s/d 6)
-    const CLASS_LIST = ['1-A', '1-B', '2-A', '2-B', '3-A', '3-B', '4-A', '4-B', '5-A', '5-B', '6-A', '6-B'];
+    // Daftar 6 Kelas (Kelas 1 s/d 6)
+    const CLASS_LIST = ['1', '2', '3', '4', '5', '6'];
+
+    // Daftar 15 Mata Pelajaran Lengkap
+    const SUBJECT_LIST = [
+      'Al-Qur\'an Hadits',
+      'Akidah Akhlak',
+      'Fikih',
+      'SKI',
+      'Bahasa Arab',
+      'Pendidikan Pancasila',
+      'Bahasa Indonesia',
+      'Matematika',
+      'IPAS',
+      'Seni Rupa',
+      'Bahasa Inggris',
+      'Bahasa Jawa',
+      'ASWAJA',
+      'Tahsin',
+      'Kajian Kitab'
+    ];
 
     const DEFAULT_TEACHERS = [
-      { id: 'G1', nip: '19850615 201001 1 008', name: 'Ustadz Abdullah, M.Pd', username: 'guru1', password: '123456', subject: 'Fiqih', role: 'guru' },
+      { id: 'G1', nip: '19850615 201001 1 008', name: 'Ustadz Abdullah, M.Pd', username: 'guru1', password: '123456', subject: 'Fikih', role: 'guru' },
       { id: 'G2', nip: '19880312 201503 2 004', name: 'Ustadzah Fatimah, S.Pd', username: 'guru2', password: '123456', subject: 'Al-Qur\'an Hadits', role: 'guru' },
       { id: 'A1', nip: '19750820 200212 1 001', name: 'Drs. H. M. Ridwan, M.Pd', username: 'admin', password: 'admin123', subject: 'Administrator / TU', role: 'admin' }
     ];
 
     const DEFAULT_STUDENTS = [
-      { id: 1, name: 'Ahmad Fauzi', nisn: '0051234561', class: '1-A', gender: 'L' },
-      { id: 2, name: 'Siti Aminah', nisn: '0051234562', class: '1-A', gender: 'P' },
-      { id: 3, name: 'Budi Santoso', nisn: '0051234563', class: '2-A', gender: 'L' },
-      { id: 4, name: 'Dewi Lestari', nisn: '0051234564', class: '3-A', gender: 'P' },
-      { id: 5, name: 'Muhammad Ali', nisn: '0051234565', class: '4-A', gender: 'L' },
-      { id: 6, name: 'Asma Kinanti Athawidya', nisn: '3192388371', class: '5-A', gender: 'P' },
-      { id: 7, name: 'Moch. Zaidan Al Kurdi', nisn: '3193173915', class: '6-A', gender: 'L' }
+      { id: 1, name: 'Ahmad Fauzi', nisn: '0051234561', class: '1', gender: 'L' },
+      { id: 2, name: 'Siti Aminah', nisn: '0051234562', class: '1', gender: 'P' },
+      { id: 3, name: 'Budi Santoso', nisn: '0051234563', class: '2', gender: 'L' },
+      { id: 4, name: 'Dewi Lestari', nisn: '0051234564', class: '3', gender: 'P' },
+      { id: 5, name: 'Muhammad Ali', nisn: '0051234565', class: '4', gender: 'L' },
+      { id: 6, name: 'Asma Kinanti Athawidya', nisn: '3192388371', class: '5', gender: 'P' },
+      { id: 7, name: 'Moch. Zaidan Al Kurdi', nisn: '3193173915', class: '6', gender: 'L' }
     ];
 
     const DEFAULT_JOURNALS = [
@@ -51,9 +70,9 @@
         id: 101,
         date: '2026-08-03',
         timeSlot: '07:30 - 09:00 (Jam 1-2)',
-        className: '1-A',
-        subject: 'Fiqih',
-        topic: 'Pengertian dan Konsep Fiqih Ibadah Dasar',
+        className: '1',
+        subject: 'Fikih',
+        topic: 'Pengertian dan Konsep Fikih Ibadah Dasar',
         status: 'Selesai',
         notes: 'Siswa aktif melakukan praktik wudhu bersama',
         teacher: 'Ustadz Abdullah, M.Pd'
@@ -62,7 +81,7 @@
         id: 102,
         date: '2026-08-03',
         timeSlot: '09:15 - 10:45 (Jam 3-4)',
-        className: '6-A',
+        className: '6',
         subject: 'Al-Qur\'an Hadits',
         topic: 'Kajian Tajwid Surah Al-Baqarah: 1-10',
         status: 'Selesai',
@@ -85,7 +104,7 @@
         studentId: 1,
         studentName: 'Ahmad Fauzi',
         nisn: '0051234561',
-        studentClass: '1-A',
+        studentClass: '1',
         violationId: 'V1',
         violationName: 'Terlambat Masuk Sekolah (>15 Menit)',
         category: 'Ringan',
@@ -97,9 +116,9 @@
     ];
 
     const DEFAULT_GRADES = [
-      { studentId: 1, subject: 'Fiqih', uh: 85, tugas: 90, uts: 80, uas: 88 },
-      { studentId: 2, subject: 'Fiqih', uh: 92, tugas: 95, uts: 90, uas: 94 },
-      { studentId: 3, subject: 'Fiqih', uh: 78, tugas: 80, uts: 75, uas: 82 }
+      { studentId: 1, subject: 'Fikih', uh: 85, tugas: 90, uts: 80, uas: 88 },
+      { studentId: 2, subject: 'Fikih', uh: 92, tugas: 95, uts: 90, uas: 94 },
+      { studentId: 3, subject: 'Fikih', uh: 78, tugas: 80, uts: 75, uas: 82 }
     ];
 
     function Icon({ name, className = '', size = 18 }) {
@@ -724,8 +743,8 @@
       const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         timeSlot: '07:30 - 09:00 (Jam 1-2)',
-        className: '1-A',
-        subject: currentUser.subject || 'Fiqih',
+        className: '1',
+        subject: currentUser.subject || 'Fikih',
         topic: '',
         status: 'Selesai',
         notes: ''
@@ -812,7 +831,9 @@
                   </div>
                   <div>
                     <label className="block font-bold mb-1">Mata Pelajaran</label>
-                    <input type="text" value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none" required />
+                    <select value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none font-bold">
+                      {SUBJECT_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+                    </select>
                   </div>
                   <div>
                     <label className="block font-bold mb-1">Materi / Topik Pembelajaran</label>
@@ -835,7 +856,7 @@
       const [selectedClass, setSelectedClass] = useState('Semua');
       const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
-      const [formData, setFormData] = useState({ name: '', nisn: '', class: '1-A', gender: 'L' });
+      const [formData, setFormData] = useState({ name: '', nisn: '', class: '1', gender: 'L' });
 
       const filtered = students.filter(s => {
         const matchSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm);
@@ -848,7 +869,7 @@
         if (!formData.name || !formData.nisn) return;
         setStudents([...students, { id: Date.now(), ...formData }]);
         setIsAddModalOpen(false);
-        setFormData({ name: '', nisn: '', class: '1-A', gender: 'L' });
+        setFormData({ name: '', nisn: '', class: '1', gender: 'L' });
         if (onSync) onSync();
       };
 
@@ -971,8 +992,8 @@
     }
 
     function PenilaianModule({ students, studentGrades, setStudentGrades, onSync }) {
-      const [selectedClass, setSelectedClass] = useState('1-A');
-      const [selectedSubject, setSelectedSubject] = useState('Fiqih');
+      const [selectedClass, setSelectedClass] = useState('1');
+      const [selectedSubject, setSelectedSubject] = useState('Fikih');
 
       const filtered = students.filter(s => s.class === selectedClass);
 
@@ -983,16 +1004,19 @@
             <p className="text-xs text-emerald-200 mt-1">Olah Nilai UH, Tugas, UTS, UAS</p>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 flex gap-3">
-            <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="p-2 border rounded-xl text-xs font-bold">
-              {CLASS_LIST.map(c => <option key={c} value={c}>Kelas {c}</option>)}
-            </select>
-            <select value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)} className="p-2 border rounded-xl text-xs font-bold">
-              <option value="Fiqih">Fiqih</option>
-              <option value="Al-Qur'an Hadits">Al-Qur'an Hadits</option>
-              <option value="Akidah Akhlak">Akidah Akhlak</option>
-              <option value="Bahasa Arab">Bahasa Arab</option>
-            </select>
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 flex flex-wrap gap-3">
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 mb-1">Pilih Kelas</label>
+              <select value={selectedClass} onChange={e => setSelectedClass(e.target.value)} className="p-2 border rounded-xl text-xs font-bold outline-none">
+                {CLASS_LIST.map(c => <option key={c} value={c}>Kelas {c}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-400 mb-1">Pilih Mata Pelajaran</label>
+              <select value={selectedSubject} onChange={e => setSelectedSubject(e.target.value)} className="p-2 border rounded-xl text-xs font-bold outline-none">
+                {SUBJECT_LIST.map(s => <option key={s} value={s}>{s}</option>)}
+              </select>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden">
