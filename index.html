@@ -66,7 +66,7 @@
       {
         id: 101,
         date: '2026-08-03',
-        timeSlot: '07:30 - 09:00 (Jam 1-2)',
+        timeSlot: '07.15 - 08.25 (Jam 1-2)',
         className: 'X-A',
         subject: 'Fiqih',
         topic: 'Pengertian dan Konsep Fiqih Muamalah',
@@ -77,7 +77,7 @@
       {
         id: 102,
         date: '2026-08-03',
-        timeSlot: '09:15 - 10:45 (Jam 3-4)',
+        timeSlot: '08.25 - 09.25 (Jam 3-4)',
         className: 'XI-A',
         subject: 'Al-Qur\'an Hadits',
         topic: 'Kajian Tajwid Surah Al-Baqarah: 1-10',
@@ -797,7 +797,7 @@
 
       const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
-        timeSlot: '07:30 - 09:00 (Jam 1-2)',
+        timeSlot: '07.15 - 08.25 (Jam 1-2)',
         className: 'X-A',
         subject: currentUser.subject && currentUser.subject !== 'Administrator / TU' ? currentUser.subject : 'Fiqih',
         topic: '',
@@ -828,7 +828,7 @@
         setIsModalOpen(false);
         setFormData({
           date: new Date().toISOString().split('T')[0],
-          timeSlot: '07:30 - 09:00 (Jam 1-2)',
+          timeSlot: '07.15 - 08.25 (Jam 1-2)',
           className: 'X-A',
           subject: currentUser.subject && currentUser.subject !== 'Administrator / TU' ? currentUser.subject : 'Fiqih',
           topic: '',
@@ -985,9 +985,10 @@
                         onChange={(e) => setFormData({ ...formData, timeSlot: e.target.value })}
                         className="w-full p-2.5 border border-slate-200 rounded-xl outline-none bg-white"
                       >
-                        <option value="07:30 - 09:00 (Jam 1-2)">07:30 - 09:00 (Jam 1-2)</option>
-                        <option value="09:15 - 10:45 (Jam 3-4)">09:15 - 10:45 (Jam 3-4)</option>
-                        <option value="11:00 - 12:30 (Jam 5-6)">11:00 - 12:30 (Jam 5-6)</option>
+                        <option value="07.15 - 08.25 (Jam 1-2)">07.15 - 08.25 (Jam 1-2)</option>
+                        <option value="08.25 - 09.25 (Jam 3-4)">08.25 - 09.25 (Jam 3-4)</option>
+                        <option value="10.00 - 11.00 (Jam 5-6)">10.00 - 11.00 (Jam 5-6)</option>
+                        <option value="11.00 - 12.00 (Jam 7-8)">11.00 - 12.00 (Jam 7-8)</option>
                       </select>
                     </div>
                   </div>
