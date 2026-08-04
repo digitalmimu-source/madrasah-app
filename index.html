@@ -1,58 +1,43 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SIMADRASAH - Sistem Informasi Administrasi Madrasah</title>
   
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Inter Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-
-  <!-- React 18 & ReactDOM CDN -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  
-  <!-- Babel Standalone for inline JSX compilation -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
+  
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-    @media print {
-      body * {
-        visibility: hidden;
-      }
-      #printable-area, #printable-area * {
-        visibility: visible;
-      }
-      #printable-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-      }
-    }
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
   </style>
 </head>
-<body class="bg-slate-50 text-slate-800 antialiased">
+<body class="bg-slate-50 text-slate-800">
   <div id="root"></div>
 
-  <!-- Main Standalone Application Script -->
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
 
-    // Default Datasets
     const DEFAULT_TEACHERS = [
       { id: 'G1', nip: '19850615 201001 1 008', name: 'Ustadz Abdullah, M.Pd', username: 'guru1', password: '123456', subject: 'Fiqih', role: 'guru' },
       { id: 'G2', nip: '19880312 201503 2 004', name: 'Ustadzah Fatimah, S.Pd', username: 'guru2', password: '123456', subject: 'Al-Qur\'an Hadits', role: 'guru' },
       { id: 'A1', nip: '19750820 200212 1 001', name: 'Drs. H. M. Ridwan, M.Pd', username: 'admin', password: 'admin123', subject: 'Administrator / TU', role: 'admin' }
     ];
+
+    const DEFAULT_MADRASAH_INFO = {
+      name: 'MAN DEMO UTAMA',
+      nsm: '131133740001',
+      address: 'Jl. Pendidikan Islam No. 123',
+      city: 'Semarang',
+      headmaster: 'Drs. H. M. Ridwan, M.Pd',
+      headmasterNip: '19750820 200212 1 001',
+      academicYear: '2026/2027',
+      semester: 'Ganjil',
+      logoUrl: 'https://placehold.co/200x200/047857/ffffff?text=LOGO'
+    };
 
     const DEFAULT_STUDENTS = [
       { id: 1, name: 'Ahmad Fauzi', nisn: '0051234561', class: 'X-A', gender: 'L' },
@@ -66,24 +51,13 @@
       {
         id: 101,
         date: '2026-08-03',
-        timeSlot: '07.15 - 08.25 (Jam 1-2)',
+        timeSlot: 'Jam ke-1',
         className: 'X-A',
         subject: 'Fiqih',
         topic: 'Pengertian dan Konsep Fiqih Muamalah',
         status: 'Selesai',
         notes: 'Siswa aktif berdiskusi mengenai akad jual beli',
         teacher: 'Ustadz Abdullah, M.Pd'
-      },
-      {
-        id: 102,
-        date: '2026-08-03',
-        timeSlot: '08.25 - 09.25 (Jam 3-4)',
-        className: 'XI-A',
-        subject: 'Al-Qur\'an Hadits',
-        topic: 'Kajian Tajwid Surah Al-Baqarah: 1-10',
-        status: 'Selesai',
-        notes: 'Latihan makhraj dan hukum nun mati',
-        teacher: 'Ustadzah Fatimah, S.Pd'
       }
     ];
 
@@ -115,57 +89,32 @@
 
     const DEFAULT_GRADES = [
       { studentId: 1, subject: 'Fiqih', uh: 85, tugas: 90, uts: 80, uas: 88 },
-      { studentId: 2, subject: 'Fiqih', uh: 92, tugas: 95, uts: 90, uas: 94 },
-      { studentId: 3, subject: 'Fiqih', uh: 70, tugas: 75, uts: 68, uas: 72 }
+      { studentId: 2, subject: 'Fiqih', uh: 92, tugas: 95, uts: 90, uas: 94 }
     ];
 
-    function Icon({ name, size = 18, className = '' }) {
-      const icons = {
-        BookOpen: <g><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></g>,
-        QrCode: <g><path d="M3 7V5a2 2 0 0 1 2-2h2 M17 3h2a2 2 0 0 1 2 2v2 M21 17v2a2 2 0 0 1-2 2h-2 M7 21H5a2 2 0 0 1-2-2v-2 M7 7h.01 M17 7h.01 M7 17h.01 M17 17h.01" /></g>,
-        Users: <g><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M22 21v-2a4 4 0 0 0-3-3.87 M16 3.13a4 4 0 0 1 0 7.75" /></g>,
-        Award: <g><path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526 M12 13a5 5 0 1 0 0-10 5 5 0 0 0 0 10z" /></g>,
-        AlertTriangle: <g><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3z M12 9v4 M12 17h.01" /></g>,
-        LogOut: <g><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4 M16 17l5-5-5-5 M21 12H9" /></g>,
-        Menu: <g><path d="M4 12h16 M4 6h16 M4 18h16" /></g>,
-        X: <g><path d="M18 6 6 18 M6 6l12 12" /></g>,
-        Plus: <g><path d="M5 12h14 M12 5v14" /></g>,
-        Search: <g><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /></g>,
-        Printer: <g><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2 M6 9V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v5 M6 14h12v8H6z" /></g>,
-        Trash2: <g><path d="M3 6h18 M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6 M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2 M10 11v6 M14 11v6" /></g>,
-        CheckCircle: <g><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><path d="m9 11 3 3 L22 4" /></g>,
-        Clock: <g><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></g>,
-        Camera: <g><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" /><circle cx="12" cy="13" r="3" /></g>,
-        Database: <g><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5 M3 12c0 1.66 4 3 9 3s9-1.34 9-3" /></g>,
-        RefreshCw: <g><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" /><path d="M21 3v5h-5 M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" /><path d="M8 16H3v5" /></g>,
-        Eye: <g><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7z" /><circle cx="12" cy="12" r="3" /></g>,
-        EyeOff: <g><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24 M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68 M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61 M2 2l20 20" /></g>,
-        ArrowRight: <g><path d="M5 12h14 M12 5l7 7-7 7" /></g>,
-        Upload: <g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M17 8l-5-5-5 5 M12 3v12" /></g>,
-        Download: <g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4 M7 10l5 5 5-5 M12 15V3" /></g>,
-        AlertCircle: <g><circle cx="12" cy="12" r="10" /><path d="M12 8v4 M12 16h.01" /></g>,
-        UserPlus: <g><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M19 8v6 M22 11h-6" /></g>,
-        UserCheck: <g><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2 M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M16 11l2 2 4-4" /></g>,
-        Edit: <g><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7 M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></g>,
-        Filter: <g><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" /></g>,
-        Settings: <g><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" /><circle cx="12" cy="12" r="3" /></g>
-      };
-
+    function Icon({ name, className = '', size = 18 }) {
       return (
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width={size}
-          height={size}
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className={className}
-        >
-          {icons[name] || null}
-        </svg>
+        <span className={`inline-flex items-center justify-center ${className}`} style={{ width: size, height: size }}>
+          {name === 'BookOpen' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></g></svg>}
+          {name === 'QrCode' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></g></svg>}
+          {name === 'Users' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></g></svg>}
+          {name === 'UserCheck' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><polyline points="17 11 19 13 23 9"/></g></svg>}
+          {name === 'Award' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></g></svg>}
+          {name === 'AlertTriangle' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></g></svg>}
+          {name === 'Settings' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></g></svg>}
+          {name === 'LogOut' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></g></svg>}
+          {name === 'Plus' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></g></svg>}
+          {name === 'Search' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></g></svg>}
+          {name === 'Printer' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></g></svg>}
+          {name === 'Trash2' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></g></svg>}
+          {name === 'CheckCircle' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></g></svg>}
+          {name === 'Database' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></g></svg>}
+          {name === 'RefreshCw' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></g></svg>}
+          {name === 'Download' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></g></svg>}
+          {name === 'Upload' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></g></svg>}
+          {name === 'Menu' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></g></svg>}
+          {name === 'X' && <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><g><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></g></svg>}
+        </span>
       );
     }
 
@@ -222,81 +171,80 @@
       );
     }
 
-    function generateHDQRCodeCanvas(student, format = 'qr_only') {
+    function generateHDQRCodeCanvas(student) {
       return new Promise((resolve) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
 
-        if (format === 'qr_only') {
-          canvas.width = 2000;
-          canvas.height = 2000;
+        canvas.width = 2000;
+        canvas.height = 2000;
 
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, 2000, 2000);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 2000, 2000);
 
-          ctx.fillStyle = '#065f46';
-          ctx.fillRect(0, 0, 2000, 30);
+        ctx.fillStyle = '#065f46';
+        ctx.fillRect(0, 0, 2000, 30);
 
-          const qrSize = 1450;
-          const startX = (2000 - qrSize) / 2;
-          const startY = 160;
+        const qrSize = 1450;
+        const startX = (2000 - qrSize) / 2;
+        const startY = 160;
 
-          ctx.strokeStyle = '#e2e8f0';
-          ctx.lineWidth = 12;
-          ctx.strokeRect(startX - 20, startY - 20, qrSize + 40, qrSize + 40);
+        ctx.strokeStyle = '#e2e8f0';
+        ctx.lineWidth = 12;
+        ctx.strokeRect(startX - 20, startY - 20, qrSize + 40, qrSize + 40);
 
-          const str = String(student.nisn || '0000000000');
-          let hash = 0;
-          for (let i = 0; i < str.length; i++) {
-            hash = (hash << 5) - hash + str.charCodeAt(i);
-            hash |= 0;
-          }
+        const str = String(student.nisn || '0000000000');
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+          hash = (hash << 5) - hash + str.charCodeAt(i);
+          hash |= 0;
+        }
 
-          const gridSize = 21;
-          const cellSize = qrSize / gridSize;
+        const gridSize = 21;
+        const cellSize = qrSize / gridSize;
 
-          ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#0f172a';
 
-          for (let r = 0; r < gridSize; r++) {
-            for (let c = 0; c < gridSize; c++) {
-              const isCornerTL = r < 5 && c < 5;
-              const isCornerTR = r < 5 && c >= gridSize - 5;
-              const isCornerBL = r >= gridSize - 5 && c < 5;
+        for (let r = 0; r < gridSize; r++) {
+          for (let c = 0; c < gridSize; c++) {
+            const isCornerTL = r < 5 && c < 5;
+            const isCornerTR = r < 5 && c >= gridSize - 5;
+            const isCornerBL = r >= gridSize - 5 && c < 5;
 
-              if (isCornerTL || isCornerTR || isCornerBL) {
-                const isBorder = r === 0 || r === 4 || c === 0 || c === 4 ||
-                                 r === gridSize - 1 || r === gridSize - 5 ||
-                                 c === gridSize - 1 || c === gridSize - 5;
-                const isCenter = (r >= 1 && r <= 3) && (c >= 1 && c <= 3) ||
-                                 (r >= 1 && r <= 3) && (c >= gridSize - 4 && c <= gridSize - 2) ||
-                                 (r >= gridSize - 4 && r <= gridSize - 2) && (c >= 1 && c <= 3);
-                if (isBorder || isCenter) {
-                  ctx.fillRect(startX + c * cellSize, startY + r * cellSize, cellSize - 1, cellSize - 1);
-                }
-              } else {
-                const seed = Math.sin(hash + r * gridSize + c) * 10000;
-                if ((seed - Math.floor(seed)) > 0.45) {
-                  ctx.fillRect(startX + c * cellSize, startY + r * cellSize, cellSize - 1, cellSize - 1);
-                }
+            if (isCornerTL || isCornerTR || isCornerBL) {
+              const isBorder = r === 0 || r === 4 || c === 0 || c === 4 ||
+                               r === gridSize - 1 || r === gridSize - 5 ||
+                               c === gridSize - 1 || c === gridSize - 5;
+              const isCenter = (r >= 1 && r <= 3) && (c >= 1 && c <= 3) ||
+                               (r >= 1 && r <= 3) && (c >= gridSize - 4 && c <= gridSize - 2) ||
+                               (r >= gridSize - 4 && r <= gridSize - 2) && (c >= 1 && c <= 3);
+              if (isBorder || isCenter) {
+                ctx.fillRect(startX + c * cellSize, startY + r * cellSize, cellSize - 1, cellSize - 1);
+              }
+            } else {
+              const seed = Math.sin(hash + r * gridSize + c) * 10000;
+              if ((seed - Math.floor(seed)) > 0.45) {
+                ctx.fillRect(startX + c * cellSize, startY + r * cellSize, cellSize - 1, cellSize - 1);
               }
             }
           }
-
-          ctx.textAlign = 'center';
-          ctx.fillStyle = '#0f172a';
-          ctx.font = 'bold 58px sans-serif';
-          ctx.fillText(student.name.toUpperCase(), 1000, 1750);
-
-          ctx.fillStyle = '#047857';
-          ctx.font = 'bold 44px monospace';
-          ctx.fillText(`NISN: ${student.nisn}`, 1000, 1830);
-
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = '500 32px sans-serif';
-          ctx.fillText('SIMADRASAH - Presensi QR Code Siswa', 1000, 1920);
-
-          resolve(canvas.toDataURL('image/png'));
         }
+
+        ctx.textAlign = 'center';
+        
+        ctx.fillStyle = '#0f172a';
+        ctx.font = 'bold 58px sans-serif';
+        ctx.fillText(student.name.toUpperCase(), 1000, 1750);
+
+        ctx.fillStyle = '#047857';
+        ctx.font = 'bold 44px monospace';
+        ctx.fillText(`NISN: ${student.nisn}`, 1000, 1830);
+
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '500 32px sans-serif';
+        ctx.fillText('SIMADRASAH - Presensi QR Code Siswa', 1000, 1920);
+
+        resolve(canvas.toDataURL('image/png'));
       });
     }
 
@@ -325,6 +273,7 @@
                   {this.state.error?.toString() || 'Unknown runtime exception'}
                 </p>
                 <button
+                  type="button"
                   onClick={() => {
                     localStorage.clear();
                     window.location.reload();
@@ -339,14 +288,6 @@
         }
         return this.props.children;
       }
-    }
-
-    function App() {
-      return (
-        <ErrorBoundary>
-          <MainAppContent />
-        </ErrorBoundary>
-      );
     }
 
     function MainAppContent() {
@@ -393,7 +334,13 @@
         return saved ? JSON.parse(saved) : DEFAULT_GRADES;
       });
 
-      const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbyry7vdacPOzyTyM9yc29A9Ip9ZYOmUAc_hCaBJ5MI7MTGEbMZqS71erOY3rEQVZWm6/exec';
+      const [madrasahInfo, setMadrasahInfo] = useState(() => {
+        const saved = localStorage.getItem('simadrasah_info');
+        return saved ? JSON.parse(saved) : DEFAULT_MADRASAH_INFO;
+      });
+
+      // URL GAS TERBARU TERPASANG PERMANEN
+      const DEFAULT_GAS_URL = 'https://script.google.com/macros/s/AKfycbzodOtNQLgrO1Z08xgj9ZVPtiJfnnM1bo-ZfuO1siBBRoV-yvjvZ87nWBsCQsu2Pj8G/exec';
       const [spreadsheetUrl, setSpreadsheetUrl] = useState(() => {
         return localStorage.getItem('simadrasah_sheet_url') || DEFAULT_GAS_URL;
       });
@@ -408,6 +355,7 @@
       useEffect(() => { localStorage.setItem('simadrasah_violation_logs', JSON.stringify(violationLogs)); }, [violationLogs]);
       useEffect(() => { localStorage.setItem('simadrasah_attendance', JSON.stringify(attendanceLogs)); }, [attendanceLogs]);
       useEffect(() => { localStorage.setItem('simadrasah_grades', JSON.stringify(studentGrades)); }, [studentGrades]);
+      useEffect(() => { localStorage.setItem('simadrasah_info', JSON.stringify(madrasahInfo)); }, [madrasahInfo]);
 
       useEffect(() => {
         const fetchInitialDataFromGAS = async () => {
@@ -416,25 +364,27 @@
 
           try {
             setIsSyncing(true);
-            setSyncStatus('🔄 Terhubung ke Google Sheets, mengunduh data...');
+            setSyncStatus('🔄 Terhubung ke Google Sheets, mengunduh data terbaru...');
             const response = await fetch(activeUrl);
             const json = await response.json();
 
             if (json && json.status === 'success' && json.data) {
-              if (json.data.teachers?.length > 0) setTeachers(json.data.teachers);
-              if (json.data.students?.length > 0) setStudents(json.data.students);
-              if (json.data.journals?.length > 0) setJournals(json.data.journals);
-              if (json.data.masterViolations?.length > 0) setMasterViolations(json.data.masterViolations);
-              if (json.data.violationLogs?.length > 0) setViolationLogs(json.data.violationLogs);
-              if (json.data.attendanceLogs?.length > 0) setAttendanceLogs(json.data.attendanceLogs);
-              if (json.data.studentGrades?.length > 0) setStudentGrades(json.data.studentGrades);
+              if (json.data.teachers && json.data.teachers.length > 0) setTeachers(json.data.teachers);
+              if (json.data.students && json.data.students.length > 0) setStudents(json.data.students);
+              if (json.data.journals && json.data.journals.length > 0) setJournals(json.data.journals);
+              if (json.data.masterViolations && json.data.masterViolations.length > 0) setMasterViolations(json.data.masterViolations);
+              if (json.data.violationLogs && json.data.violationLogs.length > 0) setViolationLogs(json.data.violationLogs);
+              if (json.data.attendanceLogs && json.data.attendanceLogs.length > 0) setAttendanceLogs(json.data.attendanceLogs);
+              if (json.data.studentGrades && json.data.studentGrades.length > 0) setStudentGrades(json.data.studentGrades);
+              if (json.data.madrasahInfo) setMadrasahInfo(json.data.madrasahInfo);
               setSyncStatus('✅ Berhasil memuat data dari Google Sheets!');
             }
           } catch (err) {
+            console.log('Automated GAS fetch status:', err);
             setSyncStatus('ℹ️ Menggunakan data lokal.');
           } finally {
             setIsSyncing(false);
-            setTimeout(() => setSyncStatus(''), 4000);
+            setTimeout(() => setSyncStatus(''), 5000);
           }
         };
 
@@ -468,7 +418,8 @@
             masterViolations,
             violationLogs,
             attendanceLogs,
-            studentGrades
+            studentGrades,
+            madrasahInfo
           };
 
           await fetch(spreadsheetUrl, {
@@ -480,6 +431,7 @@
 
           setSyncStatus('✅ Berhasil menyinkronkan data ke Google Spreadsheets!');
         } catch (err) {
+          console.error(err);
           setSyncStatus('⚠️ Gagal terhubung.');
         } finally {
           setIsSyncing(false);
@@ -488,7 +440,7 @@
       };
 
       if (!currentUser) {
-        return <LoginPage onLogin={handleLogin} teachers={teachers} />;
+        return <LoginPage onLogin={handleLogin} teachers={teachers} madrasahInfo={madrasahInfo} />;
       }
 
       return (
@@ -501,15 +453,17 @@
                   onClick={() => setIsSidebarOpen(!isSidebarOpen)}
                   className="lg:hidden text-white hover:bg-emerald-800 p-2 rounded-xl transition cursor-pointer"
                 >
-                  <Icon name={isSidebarOpen ? "X" : "Menu"} size={22} />
+                  <Icon name={isSidebarOpen ? 'X' : 'Menu'} size={22} />
                 </button>
                 <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 bg-white/10 backdrop-blur-md rounded-xl flex items-center justify-center font-black text-white text-lg border border-white/20">
-                    M
+                  <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center font-black text-emerald-900 text-lg border border-white/20 overflow-hidden shrink-0">
+                    {madrasahInfo.logoUrl ? (
+                      <img src={madrasahInfo.logoUrl} alt="Logo" className="w-full h-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                    ) : 'M'}
                   </div>
                   <div>
-                    <h1 className="font-black text-base sm:text-lg tracking-tight leading-none">SIMADRASAH</h1>
-                    <p className="text-[10px] text-emerald-200 mt-0.5 hidden sm:block">Sistem Administrasi Multiuser Madrasah</p>
+                    <h1 className="font-black text-base sm:text-lg tracking-tight leading-none">{madrasahInfo.name}</h1>
+                    <p className="text-[10px] text-emerald-200 mt-0.5 hidden sm:block">SIMADRASAH Portal - TA {madrasahInfo.academicYear}</p>
                   </div>
                 </div>
               </div>
@@ -621,6 +575,16 @@
                 >
                   <Icon name="AlertTriangle" size={18} /> Catatan Pelanggaran & BK
                 </button>
+
+                <button
+                  type="button"
+                  onClick={() => { setActiveTab('pengaturan'); setIsSidebarOpen(false); }}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-xl font-bold text-xs transition cursor-pointer ${
+                    activeTab === 'pengaturan' ? 'bg-emerald-800 text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'
+                  }`}
+                >
+                  <Icon name="Settings" size={18} /> Pengaturan Madrasah
+                </button>
               </div>
 
               <div className="p-3 bg-slate-50 border border-slate-200/60 rounded-xl space-y-2">
@@ -648,12 +612,13 @@
                 </div>
               )}
 
-              {activeTab === 'jurnal' && <JurnalModule journals={journals} setJournals={setJournals} currentUser={currentUser} onSync={handleSyncDrive} />}
+              {activeTab === 'jurnal' && <JurnalModule journals={journals} setJournals={setJournals} currentUser={currentUser} madrasahInfo={madrasahInfo} onSync={handleSyncDrive} />}
               {activeTab === 'absensi' && <AbsensiQRModule students={students} attendanceLogs={attendanceLogs} setAttendanceLogs={setAttendanceLogs} onSync={handleSyncDrive} />}
               {activeTab === 'siswa' && <SiswaModule students={students} setStudents={setStudents} onSync={handleSyncDrive} />}
               {activeTab === 'guru' && <GuruModule teachers={teachers} setTeachers={setTeachers} currentUser={currentUser} onSync={handleSyncDrive} />}
               {activeTab === 'penilaian' && <PenilaianModule students={students} studentGrades={studentGrades} setStudentGrades={setStudentGrades} onSync={handleSyncDrive} />}
               {activeTab === 'pelanggaran' && <PelanggaranModule students={students} masterViolations={masterViolations} setMasterViolations={setMasterViolations} violationLogs={violationLogs} setViolationLogs={setViolationLogs} onSync={handleSyncDrive} />}
+              {activeTab === 'pengaturan' && <PengaturanModule madrasahInfo={madrasahInfo} setMadrasahInfo={setMadrasahInfo} students={students} setStudents={setStudents} teachers={teachers} setTeachers={setTeachers} spreadsheetUrl={spreadsheetUrl} setSpreadsheetUrl={setSpreadsheetUrl} onSync={handleSyncDrive} />}
             </main>
           </div>
 
@@ -662,11 +627,10 @@
       );
     }
 
-    function LoginPage({ onLogin, teachers }) {
+    function LoginPage({ onLogin, teachers, madrasahInfo }) {
       const [role, setRole] = useState('guru');
       const [username, setUsername] = useState('guru1');
       const [password, setPassword] = useState('123456');
-      const [showPassword, setShowPassword] = useState(false);
       const [errorMsg, setErrorMsg] = useState('');
 
       const handleQuickFill = (selectedRole) => {
@@ -704,11 +668,13 @@
         <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
           <div className="bg-white w-full max-w-md rounded-3xl shadow-xl overflow-hidden border border-slate-100">
             <div className="bg-gradient-to-br from-emerald-800 to-teal-900 p-8 text-white text-center">
-              <div className="w-16 h-16 bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl flex items-center justify-center font-black text-2xl mx-auto mb-3 shadow-inner">
-                M
+              <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center font-black text-2xl mx-auto mb-3 text-emerald-800 shadow-inner overflow-hidden">
+                {madrasahInfo.logoUrl ? (
+                  <img src={madrasahInfo.logoUrl} alt="Logo" className="w-full h-full object-contain" onError={(e) => { e.target.style.display = 'none'; }} />
+                ) : 'M'}
               </div>
-              <h2 className="text-2xl font-black tracking-tight">SIMADRASAH</h2>
-              <p className="text-xs text-emerald-200 mt-1">Portal Administrasi Guru & Madrasah</p>
+              <h2 className="text-2xl font-black tracking-tight">{madrasahInfo.name}</h2>
+              <p className="text-xs text-emerald-200 mt-1">Portal SIMADRASAH Online</p>
             </div>
 
             <div className="p-6">
@@ -735,7 +701,7 @@
 
               {errorMsg && (
                 <div className="mb-4 bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs flex items-center gap-2">
-                  <Icon name="AlertCircle" size={16} />
+                  <Icon name="AlertTriangle" size={16} />
                   <span>{errorMsg}</span>
                 </div>
               )}
@@ -758,22 +724,13 @@
                   <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
                     Kata Sandi (Password)
                   </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Masukkan kata sandi"
-                      className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none pr-10"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                    >
-                      <Icon name={showPassword ? "EyeOff" : "Eye"} size={18} />
-                    </button>
-                  </div>
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Masukkan kata sandi"
+                    className="w-full px-4 py-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
                 </div>
 
                 <button
@@ -781,7 +738,6 @@
                   className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold py-3.5 rounded-xl text-sm shadow-md transition cursor-pointer flex items-center justify-center gap-2 mt-2"
                 >
                   <span>Masuk Portal</span>
-                  <Icon name="ArrowRight" size={18} />
                 </button>
               </form>
             </div>
@@ -790,14 +746,14 @@
       );
     }
 
-    function JurnalModule({ journals, setJournals, currentUser, onSync }) {
+    function JurnalModule({ journals, setJournals, currentUser, madrasahInfo, onSync }) {
       const [searchTerm, setSearchTerm] = useState('');
       const [selectedClass, setSelectedClass] = useState('Semua');
       const [isModalOpen, setIsModalOpen] = useState(false);
 
       const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
-        timeSlot: '07.15 - 08.25 (Jam 1-2)',
+        timeSlot: 'Jam ke-1',
         className: 'X-A',
         subject: currentUser.subject && currentUser.subject !== 'Administrator / TU' ? currentUser.subject : 'Fiqih',
         topic: '',
@@ -828,7 +784,7 @@
         setIsModalOpen(false);
         setFormData({
           date: new Date().toISOString().split('T')[0],
-          timeSlot: '07.15 - 08.25 (Jam 1-2)',
+          timeSlot: 'Jam ke-1',
           className: 'X-A',
           subject: currentUser.subject && currentUser.subject !== 'Administrator / TU' ? currentUser.subject : 'Fiqih',
           topic: '',
@@ -848,34 +804,32 @@
 
       return (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg relative overflow-hidden">
-            <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold mb-3 border border-white/20">
-                  <Icon name="BookOpen" size={14} /> Modul Jurnal KBM Digital
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-black">Jurnal Mengajar Guru</h2>
-                <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-xl">
-                  Catat materi pembelajaran, kelas, dan catatan KBM secara realtime.
-                </p>
+          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-xs font-semibold mb-3 border border-white/20">
+                <Icon name="BookOpen" size={14} /> Modul Jurnal KBM Digital
               </div>
+              <h2 className="text-2xl sm:text-3xl font-black">Jurnal Mengajar Guru</h2>
+              <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-xl">
+                Catat materi pembelajaran, kelas, dan catatan KBM secara realtime.
+              </p>
+            </div>
 
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => window.print()}
-                  className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs backdrop-blur-md transition flex items-center gap-1.5 cursor-pointer border border-white/20"
-                >
-                  <Icon name="Printer" size={16} /> Cetak Jurnal
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-white text-emerald-800 hover:bg-emerald-50 font-bold px-4 py-2.5 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer shrink-0"
-                >
-                  <Icon name="Plus" size={16} /> Tambah Jurnal
-                </button>
-              </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="bg-white/10 hover:bg-white/20 text-white font-bold px-4 py-2.5 rounded-xl text-xs backdrop-blur-md transition flex items-center gap-1.5 cursor-pointer border border-white/20"
+              >
+                <Icon name="Printer" size={16} /> Cetak Jurnal PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="bg-white text-emerald-800 hover:bg-emerald-50 font-bold px-4 py-2.5 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer shrink-0"
+              >
+                <Icon name="Plus" size={16} /> Tambah Jurnal
+              </button>
             </div>
           </div>
 
@@ -921,7 +875,7 @@
                     <tr key={j.id} className="hover:bg-slate-50 transition">
                       <td className="py-3.5 px-4">
                         <p className="font-bold text-slate-800">{j.date}</p>
-                        <p className="text-[10px] text-slate-400">{j.timeSlot}</p>
+                        <p className="text-[10px] text-emerald-700 font-bold font-mono">{j.timeSlot}</p>
                       </td>
                       <td className="py-3.5 px-4">
                         <span className="font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md text-[10px] mr-1.5">{j.className}</span>
@@ -941,7 +895,7 @@
                         <button
                           type="button"
                           onClick={() => handleDeleteJournal(j.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1 rounded-lg hover:bg-rose-50 transition"
+                          className="text-slate-400 hover:text-rose-600 p-1"
                         >
                           <Icon name="Trash2" size={16} />
                         </button>
@@ -958,8 +912,7 @@
               <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4">
                 <div className="flex justify-between items-center border-b border-slate-100 pb-3">
                   <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
-                    <Icon name="BookOpen" className="text-emerald-700" size={20} />
-                    Tambah Entri Jurnal Mengajar
+                    <Icon name="BookOpen" className="text-emerald-700" size={20} /> Tambah Entri Jurnal Mengajar
                   </h3>
                   <button type="button" onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
                     <Icon name="X" size={20} />
@@ -979,16 +932,20 @@
                       />
                     </div>
                     <div>
-                      <label className="block font-bold text-slate-700 mb-1">Jam Ke / Waktu</label>
+                      <label className="block font-bold text-slate-700 mb-1">Jam Ke</label>
                       <select
                         value={formData.timeSlot}
                         onChange={(e) => setFormData({ ...formData, timeSlot: e.target.value })}
-                        className="w-full p-2.5 border border-slate-200 rounded-xl outline-none bg-white"
+                        className="w-full p-2.5 border border-slate-200 rounded-xl outline-none bg-white font-bold text-slate-700"
                       >
-                        <option value="07.15 - 08.25 (Jam 1-2)">07.15 - 08.25 (Jam 1-2)</option>
-                        <option value="08.25 - 09.25 (Jam 3-4)">08.25 - 09.25 (Jam 3-4)</option>
-                        <option value="10.00 - 11.00 (Jam 5-6)">10.00 - 11.00 (Jam 5-6)</option>
-                        <option value="11.00 - 12.00 (Jam 7-8)">11.00 - 12.00 (Jam 7-8)</option>
+                        <option value="Jam ke-1">Jam ke-1</option>
+                        <option value="Jam ke-2">Jam ke-2</option>
+                        <option value="Jam ke-3">Jam ke-3</option>
+                        <option value="Jam ke-4">Jam ke-4</option>
+                        <option value="Jam ke-5">Jam ke-5</option>
+                        <option value="Jam ke-6">Jam ke-6</option>
+                        <option value="Jam ke-7">Jam ke-7</option>
+                        <option value="Jam ke-8">Jam ke-8</option>
                       </select>
                     </div>
                   </div>
@@ -1032,12 +989,12 @@
                   </div>
 
                   <div>
-                    <label className="block font-bold text-slate-700 mb-1">Catatan Tambahan KBM</label>
+                    <label className="block font-bold text-slate-700 mb-1">Catatan KBM</label>
                     <textarea
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       rows={3}
-                      placeholder="Catatan keaktifan siswa..."
+                      placeholder="Catatan keaktifan siswa, kendala, atau penugasan..."
                       className="w-full p-2.5 border border-slate-200 rounded-xl outline-none resize-none"
                     ></textarea>
                   </div>
@@ -1090,10 +1047,13 @@
               <Icon name="QrCode" size={14} /> Presensi Berbasis NISN Permanen
             </div>
             <h2 className="text-2xl sm:text-3xl font-black">Presensi QR Code Siswa</h2>
+            <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-xl">
+              QR Code berbasis NISN tetap berlaku meskipun siswa berpindah atau naik kelas.
+            </p>
           </div>
 
           {scanStatusMsg && (
-            <div className="p-4 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-sm">
+            <div className="p-4 bg-emerald-100 border border-emerald-300 text-emerald-900 rounded-2xl text-xs font-bold flex items-center gap-2">
               <Icon name="CheckCircle" size={18} />
               <span>{scanStatusMsg}</span>
             </div>
@@ -1102,18 +1062,16 @@
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-xs space-y-4">
               <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2 border-b border-slate-100 pb-3">
-                <Icon name="Camera" className="text-emerald-700" size={18} /> Pemindai QR Code
+                <Icon name="QrCode" className="text-emerald-700" size={18} /> Pemindai QR Code
               </h3>
 
-              <div className="bg-slate-900 rounded-2xl h-64 flex flex-col items-center justify-center text-center p-6 text-slate-300 relative overflow-hidden">
-                <div className="w-40 h-40 border-2 border-dashed border-emerald-400/60 rounded-2xl flex items-center justify-center relative">
-                  <Icon name="QrCode" size={64} className="text-emerald-400/40 animate-pulse" />
-                </div>
-                <p className="text-[11px] text-slate-400 mt-3 font-medium">Arahkan Kartu QR Siswa ke Kamera</p>
+              <div className="bg-slate-900 rounded-2xl h-56 flex flex-col items-center justify-center text-center p-6 text-slate-300 relative">
+                <Icon name="QrCode" size={64} className="text-emerald-400/40 animate-pulse" />
+                <p className="text-[11px] text-slate-400 mt-3 font-medium">Scan QR Code NISN Siswa</p>
               </div>
 
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Simulasi Scan Cepat 1-Klik:</p>
-              <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Simulasi Scan Cepat:</p>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
                 {students.slice(0, 5).map((s) => (
                   <button
                     key={s.id}
@@ -1134,7 +1092,7 @@
             <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-xs p-6 space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 className="font-bold text-sm text-slate-800 flex items-center gap-2">
-                  <Icon name="Clock" className="text-emerald-700" size={18} /> Riwayat Presensi Masuk
+                  <Icon name="CheckCircle" className="text-emerald-700" size={18} /> Riwayat Presensi Hari Ini
                 </h3>
                 <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-full">
                   {attendanceLogs.length} Siswa Hadir
@@ -1154,11 +1112,13 @@
                   <tbody className="divide-y divide-slate-100 text-xs">
                     {attendanceLogs.length === 0 ? (
                       <tr>
-                        <td colSpan={4} className="py-8 text-center text-slate-400">Belum ada pemindaian presensi hari ini.</td>
+                        <td colSpan={4} className="py-8 text-center text-slate-400">
+                          Belum ada pemindaian presensi hari ini.
+                        </td>
                       </tr>
                     ) : (
                       attendanceLogs.map((log) => (
-                        <tr key={log.id} className="hover:bg-slate-50 transition">
+                        <tr key={log.id} className="hover:bg-slate-50">
                           <td className="py-2.5 px-3 font-mono font-bold text-slate-700">{log.time}</td>
                           <td className="py-2.5 px-3">
                             <p className="font-bold text-slate-800">{log.studentName}</p>
@@ -1185,6 +1145,8 @@
     function SiswaModule({ students, setStudents, onSync }) {
       const [searchTerm, setSearchTerm] = useState('');
       const [selectedClass, setSelectedClass] = useState('Semua');
+      const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+      const [pasteData, setPasteData] = useState('');
 
       const filteredStudents = students.filter((s) => {
         const matchSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || s.nisn.includes(searchTerm);
@@ -1193,18 +1155,78 @@
       });
 
       const handleDownloadSingleHD = async (student) => {
-        const dataUrl = await generateHDQRCodeCanvas(student, 'qr_only');
+        const dataUrl = await generateHDQRCodeCanvas(student);
         const link = document.createElement('a');
         link.download = `QR_${student.name.replace(/\s+/g, '_')}_${student.nisn}_2000px.png`;
         link.href = dataUrl;
         link.click();
       };
 
+      const handleDownloadTemplate = () => {
+        const csvHeader = 'Nama Lengkap,NISN,Kelas,Jenis Kelamin (L/P)\nAhmad Fauzi,0051234568,X-A,L\nSiti Rahma,0051234569,X-A,P';
+        const blob = new Blob([csvHeader], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'Template_Import_Siswa_SIMADRASAH.csv';
+        link.click();
+      };
+
+      const handleImportBulkSiswa = () => {
+        if (!pasteData.trim()) return;
+        const lines = pasteData.trim().split('\n');
+        const newStudents = [];
+
+        lines.forEach((line, idx) => {
+          const parts = line.split(/,|\t/);
+          if (parts.length >= 2) {
+            const name = parts[0]?.trim();
+            const nisn = parts[1]?.trim();
+            const cls = parts[2]?.trim() || 'X-A';
+            const gender = parts[3]?.trim().toUpperCase() || 'L';
+
+            if (name && nisn && !name.toLowerCase().includes('nama')) {
+              newStudents.push({
+                id: Date.now() + idx,
+                name,
+                nisn,
+                class: cls,
+                gender
+              });
+            }
+          }
+        });
+
+        if (newStudents.length > 0) {
+          setStudents([...students, ...newStudents]);
+          setPasteData('');
+          setIsImportModalOpen(false);
+          if (onSync) onSync();
+        }
+      };
+
       return (
         <div className="space-y-6">
-          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
-            <h2 className="text-2xl sm:text-3xl font-black">Data & Kartu Siswa</h2>
-            <p className="text-emerald-100 text-xs sm:text-sm mt-1">Unduh QR Code HD Murni (2000px × 2000px) tanpa label kelas.</p>
+          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-2xl sm:text-3xl font-black">Data & Kartu Siswa</h2>
+              <p className="text-emerald-100 text-xs sm:text-sm mt-1">Unduh QR Code HD Murni (2000px × 2000px) tanpa label kelas.</p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={handleDownloadTemplate}
+                className="bg-white/10 hover:bg-white/20 text-white font-bold px-3 py-2 rounded-xl text-xs backdrop-blur-md transition flex items-center gap-1.5 cursor-pointer border border-white/20"
+              >
+                <Icon name="Download" size={14} /> Template CSV
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(true)}
+                className="bg-white text-emerald-800 hover:bg-emerald-50 font-bold px-3.5 py-2 rounded-xl text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer"
+              >
+                <Icon name="Upload" size={14} /> Import Masal Siswa
+              </button>
+            </div>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-col sm:flex-row gap-3 items-center justify-between">
@@ -1257,16 +1279,76 @@
               </div>
             ))}
           </div>
+
+          {isImportModalOpen && (
+            <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl p-6 space-y-4">
+                <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                  <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
+                    <Icon name="Upload" className="text-emerald-700" size={20} /> Import Masal Siswa
+                  </h3>
+                  <button type="button" onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600 p-1">
+                    <Icon name="X" size={20} />
+                  </button>
+                </div>
+
+                <p className="text-xs text-slate-500">
+                  Tempelkan teks CSV / Excel dengan format per baris:
+                  <br />
+                  <code className="bg-slate-100 font-mono px-1.5 py-0.5 rounded text-[11px] text-slate-800">
+                    Nama Lengkap, NISN, Kelas, Jenis Kelamin (L/P)
+                  </code>
+                </p>
+
+                <textarea
+                  value={pasteData}
+                  onChange={(e) => setPasteData(e.target.value)}
+                  rows={6}
+                  placeholder="Ahmad Fauzi,0051234568,X-A,L&#10;Siti Rahma,0051234569,X-A,P"
+                  className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none"
+                ></textarea>
+
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setIsImportModalOpen(false)} className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-xs">
+                    Batal
+                  </button>
+                  <button type="button" onClick={handleImportBulkSiswa} className="px-5 py-2 bg-emerald-700 text-white rounded-xl font-bold text-xs hover:bg-emerald-800 shadow-md cursor-pointer">
+                    Proses Import
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
 
     function GuruModule({ teachers, setTeachers, currentUser, onSync }) {
+      const [searchTerm, setSearchTerm] = useState('');
+
+      const filteredTeachers = teachers.filter((t) =>
+        t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        t.username.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
-            <h2 className="text-2xl sm:text-3xl font-black">Data Guru & Akun Akses</h2>
-            <p className="text-emerald-100 text-xs sm:text-sm mt-1">Satu Guru Satu Akun Mandiri</p>
+            <h2 className="text-2xl sm:text-3xl font-black">Data Guru & Akun</h2>
+            <p className="text-emerald-100 text-xs sm:text-sm mt-1">Satu Guru Satu Akun Mandiri untuk Pengisian Jurnal & Nilai.</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs">
+            <div className="relative">
+              <Icon name="Search" className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Cari nama guru atau username..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-emerald-500 outline-none"
+              />
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
@@ -1277,18 +1359,20 @@
                     <th className="py-3.5 px-4">Nama & NIP</th>
                     <th className="py-3.5 px-4">Mata Pelajaran</th>
                     <th className="py-3.5 px-4">Username Login</th>
+                    <th className="py-3.5 px-4">Password</th>
                     <th className="py-3.5 px-4">Peran</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {teachers.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50 transition">
+                  {filteredTeachers.map((t) => (
+                    <tr key={t.id} className="hover:bg-slate-50">
                       <td className="py-3.5 px-4 font-bold text-slate-800">
                         <p>{t.name}</p>
                         <p className="text-[10px] text-slate-400 font-mono">NIP: {t.nip || '-'}</p>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-emerald-800">{t.subject || '-'}</td>
                       <td className="py-3.5 px-4 font-mono font-semibold text-slate-700">{t.username}</td>
+                      <td className="py-3.5 px-4 font-mono text-slate-500">{t.password}</td>
                       <td className="py-3.5 px-4">
                         <span className={`font-bold px-2.5 py-0.5 rounded-full text-[10px] ${
                           t.role === 'admin' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'
@@ -1338,22 +1422,41 @@
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
             <h2 className="text-2xl sm:text-3xl font-black">Penilaian & Leger Rapor</h2>
+            <p className="text-emerald-100 text-xs sm:text-sm mt-1">Olah Nilai UH, Tugas, UTS, dan UAS Otomatis (KKM 75).</p>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-wrap gap-3 items-center justify-between">
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex flex-wrap gap-3 justify-between items-center">
             <div className="flex gap-3">
-              <select value={selectedClass} onChange={(e) => setSelectedClass(e.target.value)} className="px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none">
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none"
+              >
                 <option value="X-A">Kelas X-A</option>
                 <option value="XI-A">Kelas XI-A</option>
                 <option value="XI-B">Kelas XI-B</option>
                 <option value="XII-A">Kelas XII-A</option>
               </select>
 
-              <select value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)} className="px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none">
+              <select
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+                className="px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none"
+              >
                 <option value="Fiqih">Fiqih</option>
                 <option value="Al-Qur'an Hadits">Al-Qur'an Hadits</option>
+                <option value="Akidah Akhlak">Akidah Akhlak</option>
+                <option value="SKI">SKI</option>
               </select>
             </div>
+
+            <button
+              type="button"
+              onClick={onSync}
+              className="bg-emerald-700 hover:bg-emerald-800 text-white font-bold px-4 py-2 rounded-xl text-xs shadow-xs cursor-pointer"
+            >
+              Simpan & Sinkronkan
+            </button>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
@@ -1367,21 +1470,39 @@
                     <th className="py-3 px-4 text-center">UTS (30%)</th>
                     <th className="py-3 px-4 text-center">UAS (30%)</th>
                     <th className="py-3 px-4 text-center">Nilai Akhir</th>
+                    <th className="py-3 px-4 text-center">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
                   {filteredStudents.map((s) => {
                     const g = getStudentGrade(s.id);
                     const finalGrade = Math.round(g.uh * 0.2 + g.tugas * 0.2 + g.uts * 0.3 + g.uas * 0.3);
+                    const isPassed = finalGrade >= 75;
 
                     return (
-                      <tr key={s.id} className="hover:bg-slate-50 transition">
-                        <td className="py-3 px-4 font-bold text-slate-800">{s.name}</td>
-                        <td className="py-3 px-4 text-center"><input type="number" value={g.uh} onChange={(e) => handleGradeChange(s.id, 'uh', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" /></td>
-                        <td className="py-3 px-4 text-center"><input type="number" value={g.tugas} onChange={(e) => handleGradeChange(s.id, 'tugas', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" /></td>
-                        <td className="py-3 px-4 text-center"><input type="number" value={g.uts} onChange={(e) => handleGradeChange(s.id, 'uts', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" /></td>
-                        <td className="py-3 px-4 text-center"><input type="number" value={g.uas} onChange={(e) => handleGradeChange(s.id, 'uas', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" /></td>
+                      <tr key={s.id} className="hover:bg-slate-50">
+                        <td className="py-3 px-4 font-bold text-slate-800">
+                          <p>{s.name}</p>
+                          <p className="text-[10px] text-slate-400 font-mono">NISN: {s.nisn}</p>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <input type="number" value={g.uh} onChange={(e) => handleGradeChange(s.id, 'uh', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <input type="number" value={g.tugas} onChange={(e) => handleGradeChange(s.id, 'tugas', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <input type="number" value={g.uts} onChange={(e) => handleGradeChange(s.id, 'uts', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" />
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <input type="number" value={g.uas} onChange={(e) => handleGradeChange(s.id, 'uas', e.target.value)} className="w-16 p-1.5 border border-slate-200 rounded-lg text-center font-bold" />
+                        </td>
                         <td className="py-3 px-4 text-center font-black text-sm text-slate-800">{finalGrade}</td>
+                        <td className="py-3 px-4 text-center">
+                          <span className={`font-bold px-2.5 py-0.5 rounded-full text-[10px] ${isPassed ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                            {isPassed ? 'Tuntas' : 'Remidial'}
+                          </span>
+                        </td>
                       </tr>
                     );
                   })}
@@ -1394,10 +1515,32 @@
     }
 
     function PelanggaranModule({ students, masterViolations, setMasterViolations, violationLogs, setViolationLogs, onSync }) {
+      const [selectedClass, setSelectedClass] = useState('Semua');
+
+      const filteredLogs = violationLogs.filter(l => selectedClass === 'Semua' || l.studentClass === selectedClass);
+
       return (
         <div className="space-y-6">
           <div className="bg-gradient-to-r from-rose-800 to-red-900 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
-            <h2 className="text-2xl sm:text-3xl font-black">Catatan Pelanggaran Siswa & BK</h2>
+            <h2 className="text-2xl sm:text-3xl font-black">Catatan Pelanggaran Siswa</h2>
+            <p className="text-rose-100 text-xs sm:text-sm mt-1">Rekapitulasi Poin Kedisiplinan & Bimbingan Konseling (BK).</p>
+          </div>
+
+          <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-xs flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-600">Filter Kelas:</span>
+              <select
+                value={selectedClass}
+                onChange={(e) => setSelectedClass(e.target.value)}
+                className="px-3 py-1.5 border border-slate-200 rounded-xl text-xs font-bold bg-white outline-none"
+              >
+                <option value="Semua">Semua Kelas</option>
+                <option value="X-A">Kelas X-A</option>
+                <option value="XI-A">Kelas XI-A</option>
+                <option value="XI-B">Kelas XI-B</option>
+                <option value="XII-A">Kelas XII-A</option>
+              </select>
+            </div>
           </div>
 
           <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
@@ -1406,24 +1549,196 @@
                 <thead>
                   <tr className="bg-slate-50 border-b border-slate-100 text-[11px] font-bold text-slate-500 uppercase">
                     <th className="py-3 px-4">Tanggal</th>
-                    <th className="py-3 px-4">Siswa</th>
-                    <th className="py-3 px-4">Pelanggaran</th>
+                    <th className="py-3 px-4">Siswa & Kelas</th>
+                    <th className="py-3 px-4">Jenis Pelanggaran</th>
                     <th className="py-3 px-4">Poin</th>
+                    <th className="py-3 px-4">Pelapor</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-xs">
-                  {violationLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50 transition">
+                  {filteredLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-50">
                       <td className="py-3 px-4 font-bold text-slate-700">{log.date}</td>
-                      <td className="py-3 px-4 font-bold text-slate-800">{log.studentName} ({log.studentClass})</td>
-                      <td className="py-3 px-4 font-bold text-rose-800">{log.violationName}</td>
-                      <td className="py-3 px-4"><span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-md">+{log.points} Pts</span></td>
+                      <td className="py-3 px-4">
+                        <p className="font-bold text-slate-800">{log.studentName}</p>
+                        <p className="text-[10px] text-slate-400 font-mono">NISN: {log.nisn} | {log.studentClass}</p>
+                      </td>
+                      <td className="py-3 px-4 max-w-xs font-bold text-rose-800">{log.violationName}</td>
+                      <td className="py-3 px-4">
+                        <span className="bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-md text-[11px]">
+                          +{log.points} Pts
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-600">{log.reporter}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
           </div>
+        </div>
+      );
+    }
+
+    function PengaturanModule({ madrasahInfo, setMadrasahInfo, students, setStudents, teachers, setTeachers, spreadsheetUrl, setSpreadsheetUrl, onSync }) {
+      const [activeSubTab, setActiveSubTab] = useState('identitas');
+      const [infoForm, setInfoForm] = useState({ ...madrasahInfo });
+      const [studentForm, setStudentForm] = useState({ name: '', nisn: '', class: 'X-A', gender: 'L' });
+      const [bulkStudentPaste, setBulkStudentPaste] = useState('');
+
+      const handleSaveInfo = (e) => {
+        e.preventDefault();
+        setMadrasahInfo({ ...infoForm });
+        alert('✅ Identitas Madrasah berhasil diperbarui!');
+        if (onSync) onSync();
+      };
+
+      const handleAddSingleStudent = (e) => {
+        e.preventDefault();
+        if (!studentForm.name || !studentForm.nisn) return;
+        const newS = { id: Date.now(), ...studentForm };
+        setStudents([...students, newS]);
+        setStudentForm({ name: '', nisn: '', class: 'X-A', gender: 'L' });
+        if (onSync) onSync();
+      };
+
+      const handleImportBulkStudents = () => {
+        if (!bulkStudentPaste.trim()) return;
+        const lines = bulkStudentPaste.trim().split('\n');
+        const newS = [];
+
+        lines.forEach((line, idx) => {
+          const parts = line.split(/,|\t/);
+          if (parts.length >= 2) {
+            const name = parts[0]?.trim();
+            const nisn = parts[1]?.trim();
+            const cls = parts[2]?.trim() || 'X-A';
+            const gender = parts[3]?.trim().toUpperCase() || 'L';
+
+            if (name && nisn && !name.toLowerCase().includes('nama')) {
+              newS.push({ id: Date.now() + idx, name, nisn, class: cls, gender });
+            }
+          }
+        });
+
+        if (newS.length > 0) {
+          setStudents([...students, ...newS]);
+          setBulkStudentPaste('');
+          alert(`✅ Berhasil mengimpor ${newS.length} siswa baru!`);
+          if (onSync) onSync();
+        }
+      };
+
+      return (
+        <div className="space-y-6">
+          <div className="bg-gradient-to-r from-emerald-800 to-teal-800 rounded-3xl p-6 sm:p-8 text-white shadow-lg">
+            <h2 className="text-2xl sm:text-3xl font-black">Pengaturan Madrasah</h2>
+            <p className="text-emerald-100 text-xs sm:text-sm mt-1">Kelola identitas madrasah, logo, serta manajemen pengguna masal.</p>
+          </div>
+
+          <div className="bg-white p-2 rounded-2xl border border-slate-100 shadow-xs flex flex-wrap gap-1">
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('identitas')}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeSubTab === 'identitas' ? 'bg-emerald-800 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Identitas & Logo
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSubTab('siswa')}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition cursor-pointer ${
+                activeSubTab === 'siswa' ? 'bg-emerald-800 text-white shadow-xs' : 'text-slate-600 hover:bg-slate-100'
+              }`}
+            >
+              Kelola & Import Siswa ({students.length})
+            </button>
+          </div>
+
+          {activeSubTab === 'identitas' && (
+            <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-xs space-y-6">
+              <form onSubmit={handleSaveInfo} className="space-y-4 text-xs">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Nama Resmi Madrasah</label>
+                    <input type="text" value={infoForm.name} onChange={(e) => setInfoForm({ ...infoForm, name: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" required />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">NSM / NPSN</label>
+                    <input type="text" value={infoForm.nsm} onChange={(e) => setInfoForm({ ...infoForm, nsm: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Alamat Lengkap</label>
+                    <input type="text" value={infoForm.address} onChange={(e) => setInfoForm({ ...infoForm, address: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Kabupaten / Kota</label>
+                    <input type="text" value={infoForm.city} onChange={(e) => setInfoForm({ ...infoForm, city: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">Nama Kepala Madrasah</label>
+                    <input type="text" value={infoForm.headmaster} onChange={(e) => setInfoForm({ ...infoForm, headmaster: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-slate-700 mb-1">NIP Kepala Madrasah</label>
+                    <input type="text" value={infoForm.headmasterNip} onChange={(e) => setInfoForm({ ...infoForm, headmasterNip: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1">URL Logo Madrasah</label>
+                  <input type="url" value={infoForm.logoUrl} onChange={(e) => setInfoForm({ ...infoForm, logoUrl: e.target.value })} placeholder="https://.../logo.png" className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" />
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button type="submit" className="px-6 py-2.5 bg-emerald-700 hover:bg-emerald-800 text-white font-bold rounded-xl shadow-md transition cursor-pointer">
+                    Simpan Perubahan Identitas
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {activeSubTab === 'siswa' && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-xs space-y-4">
+                  <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Tambah Siswa Tunggal</h3>
+                  <form onSubmit={handleAddSingleStudent} className="space-y-3 text-xs">
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">Nama Lengkap</label>
+                      <input type="text" value={studentForm.name} onChange={(e) => setStudentForm({ ...studentForm, name: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl outline-none" required />
+                    </div>
+                    <div>
+                      <label className="block font-bold text-slate-700 mb-1">NISN</label>
+                      <input type="text" value={studentForm.nisn} onChange={(e) => setStudentForm({ ...studentForm, nisn: e.target.value })} className="w-full p-2.5 border border-slate-200 rounded-xl font-mono outline-none" required />
+                    </div>
+                    <button type="submit" className="w-full py-2.5 bg-emerald-700 text-white font-bold rounded-xl shadow-xs">
+                      + Tambah Siswa
+                    </button>
+                  </form>
+                </div>
+
+                <div className="bg-white rounded-3xl border border-slate-100 p-6 shadow-xs space-y-4 flex flex-col justify-between">
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 border-b border-slate-100 pb-3">Import Masal Siswa (Paste CSV)</h3>
+                    <textarea value={bulkStudentPaste} onChange={(e) => setBulkStudentPaste(e.target.value)} rows={5} placeholder="Ahmad Fauzi,0051234568,X-A,L" className="w-full p-3 border border-slate-200 rounded-2xl text-xs font-mono outline-none resize-none mt-2"></textarea>
+                  </div>
+                  <button type="button" onClick={handleImportBulkStudents} className="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl shadow-xs">
+                    Proses Import Masal
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
@@ -1442,7 +1757,7 @@
           <div className="bg-white w-full max-w-xl rounded-3xl shadow-2xl p-6 space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
               <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
-                <Icon name="Database" className="text-emerald-700" size={20} /> Integration Google Spreadsheets DB
+                <Icon name="Database" className="text-emerald-700" size={20} /> Google Spreadsheets Database URL
               </h3>
               <button type="button" onClick={onClose} className="text-slate-400 hover:text-slate-600 p-1">
                 <Icon name="X" size={20} />
@@ -1451,11 +1766,12 @@
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Web App URL (Google Apps Script Endpoint)</label>
+                <label className="block font-bold text-slate-700 mb-1">Web App Endpoint URL (Google Apps Script)</label>
                 <input
                   type="url"
                   value={tempUrl}
                   onChange={(e) => setTempUrl(e.target.value)}
+                  placeholder="https://script.google.com/macros/s/.../exec"
                   className="w-full p-3 border border-slate-200 rounded-xl font-mono text-[11px] outline-none"
                 />
               </div>
@@ -1474,9 +1790,11 @@
       );
     }
 
-    const rootElement = document.getElementById('root');
-    const root = ReactDOM.createRoot(rootElement);
-    root.render(<App />);
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <ErrorBoundary>
+        <MainAppContent />
+      </ErrorBoundary>
+    );
   </script>
 </body>
 </html>
