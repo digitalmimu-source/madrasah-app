@@ -69,7 +69,7 @@
       {
         id: 101,
         date: '2026-08-03',
-        timeSlot: '07:30 - 09:00 (Jam 1-2)',
+        timeSlot: 'Jam ke-1 & 2',
         className: '1',
         subject: 'Fikih',
         topic: 'Pengertian dan Konsep Fikih Ibadah Dasar',
@@ -80,7 +80,7 @@
       {
         id: 102,
         date: '2026-08-03',
-        timeSlot: '09:15 - 10:45 (Jam 3-4)',
+        timeSlot: 'Jam ke-3 & 4',
         className: '6',
         subject: 'Al-Qur\'an Hadits',
         topic: 'Kajian Tajwid Surah Al-Baqarah: 1-10',
@@ -740,9 +740,12 @@
       const [selectedClass, setSelectedClass] = useState('Semua');
       const [isModalOpen, setIsModalOpen] = useState(false);
 
+      const HOURS_LIST = ['1', '2', '3', '4', '5', '6', '7', '8'];
+
       const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
-        timeSlot: '07:30 - 09:00 (Jam 1-2)',
+        jamStart: '1',
+        jamEnd: '2',
         className: '1',
         subject: currentUser.subject || 'Fikih',
         topic: '',
@@ -759,9 +762,34 @@
       const handleAddJournal = (e) => {
         e.preventDefault();
         if (!formData.topic) return;
-        const newEntry = { id: Date.now(), ...formData, teacher: currentUser.name };
+
+        const timeSlotStr = formData.jamStart === formData.jamEnd 
+          ? `Jam ke-${formData.jamStart}` 
+          : `Jam ke-${formData.jamStart} & ${formData.jamEnd}`;
+
+        const newEntry = { 
+          id: Date.now(), 
+          date: formData.date,
+          timeSlot: timeSlotStr,
+          className: formData.className,
+          subject: formData.subject,
+          topic: formData.topic,
+          status: formData.status,
+          notes: formData.notes,
+          teacher: currentUser.name 
+        };
         setJournals([newEntry, ...journals]);
         setIsModalOpen(false);
+        setFormData({
+          date: new Date().toISOString().split('T')[0],
+          jamStart: '1',
+          jamEnd: '2',
+          className: '1',
+          subject: currentUser.subject || 'Fikih',
+          topic: '',
+          status: 'Selesai',
+          notes: ''
+        });
         if (onSync) onSync();
       };
 
@@ -808,7 +836,7 @@
               <tbody className="divide-y divide-slate-100 text-xs">
                 {filteredJournals.map(j => (
                   <tr key={j.id} className="hover:bg-slate-50">
-                    <td className="p-3 font-bold">{j.date}<br/><span className="text-[10px] text-slate-400">{j.timeSlot}</span></td>
+                    <td className="p-3 font-bold">{j.date}<br/><span className="text-[10px] text-emerald-800 font-mono font-bold bg-emerald-50 px-1.5 py-0.5 rounded">{j.timeSlot}</span></td>
                     <td className="p-3"><span className="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded font-bold mr-2">Kelas {j.className}</span>{j.subject}</td>
                     <td className="p-3 font-medium">{j.topic}</td>
                     <td className="p-3 text-slate-600">{j.teacher}</td>
@@ -823,12 +851,37 @@
               <div className="bg-white max-w-md w-full p-6 rounded-3xl space-y-4">
                 <h3 className="font-bold text-base">Tambah Jurnal Mengajar</h3>
                 <form onSubmit={handleAddJournal} className="space-y-3 text-xs">
-                  <div>
-                    <label className="block font-bold mb-1">Kelas Target</label>
-                    <select value={formData.className} onChange={e => setFormData({...formData, className: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none">
-                      {CLASS_LIST.map(c => <option key={c} value={c}>Kelas {c}</option>)}
-                    </select>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block font-bold mb-1">Tanggal KBM</label>
+                      <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none" required />
+                    </div>
+                    <div>
+                      <label className="block font-bold mb-1">Kelas Target</label>
+                      <select value={formData.className} onChange={e => setFormData({...formData, className: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none">
+                        {CLASS_LIST.map(c => <option key={c} value={c}>Kelas {c}</option>)}
+                      </select>
+                    </div>
                   </div>
+
+                  <div>
+                    <label className="block font-bold mb-1 text-slate-700">Pilih Jam Ke- (1 - 8)</label>
+                    <div className="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-bold block mb-1">Dari Jam Ke-</span>
+                        <select value={formData.jamStart} onChange={e => setFormData({...formData, jamStart: e.target.value})} className="w-full p-2 border rounded-lg outline-none font-bold bg-white">
+                          {HOURS_LIST.map(h => <option key={h} value={h}>Jam ke-{h}</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-bold block mb-1">Sampai Jam Ke-</span>
+                        <select value={formData.jamEnd} onChange={e => setFormData({...formData, jamEnd: e.target.value})} className="w-full p-2 border rounded-lg outline-none font-bold bg-white">
+                          {HOURS_LIST.map(h => <option key={h} value={h}>Jam ke-{h}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
                   <div>
                     <label className="block font-bold mb-1">Mata Pelajaran</label>
                     <select value={formData.subject} onChange={e => setFormData({...formData, subject: e.target.value})} className="w-full p-2.5 border rounded-xl outline-none font-bold">
@@ -841,7 +894,7 @@
                   </div>
                   <div className="flex justify-end gap-2 pt-2">
                     <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 bg-slate-100 rounded-xl font-bold">Batal</button>
-                    <button type="submit" className="px-5 py-2 bg-emerald-800 text-white rounded-xl font-bold">Simpan</button>
+                    <button type="submit" className="px-5 py-2 bg-emerald-800 text-white rounded-xl font-bold">Simpan Jurnal</button>
                   </div>
                 </form>
               </div>
