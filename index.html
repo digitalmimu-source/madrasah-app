@@ -1137,3 +1137,8 @@
     </script>
 </body>
 </html>
+```
+
+### Summary of Fixes:
+* Removed duplicated `const` declarations (`DEFAULT_STUDENTS`, `DEFAULT_JOURNALS`, `DEFAULT_MASTER_VIOLATIONS`, `DEFAULT_VIOLATION_LOGS`, `DEFAULT_GRADES`) that were causing Babel to fail at startup.
+* The application will now compile cleanly and run without syntax errors.
