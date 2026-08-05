@@ -3,21 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rekapan Absensi</title>
+    <title>Sistem Absensi</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 20px;
             background-color: #f4f6f9;
         }
-        h2 {
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2, h3 {
+            margin-top: 0;
             color: #333;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .form-group {
+            flex: 1;
+            min-width: 200px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 14px;
+        }
+        .btn-submit {
+            background-color: #28a745;
+        }
+        .btn-edit {
+            background-color: #ffc107;
+            color: #000;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn-close {
+            background-color: #6c757d;
+        }
+        .btn:hover {
+            opacity: 0.85;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            background: #fff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-top: 10px;
         }
         th, td {
             padding: 12px;
@@ -31,27 +91,8 @@
         tr:nth-child(even) {
             background-color: #f9f9f9;
         }
-        .btn {
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            color: white;
-            font-size: 14px;
-            margin-right: 5px;
-        }
-        .btn-edit {
-            background-color: #ffc107;
-            color: #000;
-        }
-        .btn-delete {
-            background-color: #dc3545;
-        }
-        .btn:hover {
-            opacity: 0.85;
-        }
         
-        /* Style Modal Edit */
+        /* Modal Edit */
         .modal {
             display: none; 
             position: fixed; 
@@ -66,72 +107,93 @@
             background-color: #fff;
             margin: 10% auto;
             padding: 20px;
-            border-radius: 5px;
-            width: 350px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-        }
-        .form-group input, .form-group select {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
         }
         .modal-footer {
             text-align: right;
-        }
-        .btn-close {
-            background-color: #6c757d;
-        }
-        .btn-save {
-            background-color: #28a745;
+            margin-top: 15px;
         }
     </style>
 </head>
 <body>
 
-    <h2>Rekapan Absensi</h2>
+    <div class="container">
+        
+        <!-- SECTION 1: FORM INPUT ABSENSI -->
+        <div class="card">
+            <h2>Form Absensi Baru</h2>
+            <form id="formTambahAbsensi">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inputNama">Nama / Karyawan:</label>
+                        <input type="text" id="inputNama" placeholder="Masukkan nama..." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputTanggal">Tanggal:</label>
+                        <input type="date" id="inputTanggal" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="inputStatus">Status Kehadiran:</label>
+                        <select id="inputStatus" required>
+                            <option value="Hadir">Hadir</option>
+                            <option value="Izin">Izin</option>
+                            <option value="Sakit">Sakit</option>
+                            <option value="Alpha">Alpha</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="inputKeterangan">Keterangan:</label>
+                        <input type="text" id="inputKeterangan" placeholder="Contoh: Sakit Flu / Acara Keluarga">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-submit">Simpan Absensi</button>
+            </form>
+        </div>
 
-    <!-- Tabel Rekapan Absensi (Kosong dari data default) -->
-    <table>
-        <thead>
-            <tr>
-                <th>No</th>
-                <th>Nama</th>
-                <th>Tanggal</th>
-                <th>Status</th>
-                <th>Keterangan</th>
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody id="tabel-absensi-body">
-            <!-- Data dari Database akan dimasukkan di sini secara otomatis -->
-        </tbody>
-    </table>
+        <!-- SECTION 2: TABEL REKAPAN ABSENSI -->
+        <div class="card">
+            <h2>Rekapan Absensi</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                        <th>Keterangan</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="tabel-absensi-body">
+                    <!-- Kosong: Data akan ditarik murni dari Database via JavaScript -->
+                </tbody>
+            </table>
+        </div>
 
-    <!-- Modal Form Edit Absensi -->
+    </div>
+
+    <!-- MODAL EDIT ABSENSI -->
     <div id="modalEdit" class="modal">
         <div class="modal-content">
-            <h3>Edit Absensi</h3>
+            <h3>Edit Data Absensi</h3>
             <form id="formEditAbsensi">
                 <input type="hidden" id="editId">
                 
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label for="editNama">Nama:</label>
                     <input type="text" id="editNama" required>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label for="editTanggal">Tanggal:</label>
                     <input type="date" id="editTanggal" required>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label for="editStatus">Status:</label>
                     <select id="editStatus" required>
                         <option value="Hadir">Hadir</option>
@@ -141,28 +203,26 @@
                     </select>
                 </div>
                 
-                <div class="form-group">
+                <div class="form-group" style="margin-bottom: 10px;">
                     <label for="editKeterangan">Keterangan:</label>
                     <input type="text" id="editKeterangan">
                 </div>
                 
                 <div class="modal-footer">
                     <button type="button" class="btn btn-close" onclick="tutupModal()">Batal</button>
-                    <button type="submit" class="btn btn-save">Simpan Perubahan</button>
+                    <button type="submit" class="btn btn-submit">Update Data</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
-        // Array penampung data dari database
         let dataAbsensi = [];
 
-        // 1. FUNGSI MENGAMBIL DATA DARI DATABASE VIA API
+        // 1. Dapatkan Data dari Database (READ)
         async function muatDataAbsensi() {
             try {
-                // Ganti URL endpoint berikut dengan endpoint backend/API Anda
-                const response = await fetch('/api/get-absensi'); 
+                const response = await fetch('/api/get-absensi'); // Sesuaikan endpoint API Anda
                 const result = await response.json();
                 
                 dataAbsensi = result.data; 
@@ -172,13 +232,13 @@
             }
         }
 
-        // 2. FUNGSI MENAMPILKAN DATA KE TABEL HTML
+        // 2. Tampilkan Data ke Tabel
         function renderTabelAbsensi() {
             const tbody = document.getElementById('tabel-absensi-body');
             tbody.innerHTML = ''; 
 
-            if (dataAbsensi.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data absensi.</td></tr>`;
+            if (!dataAbsensi || dataAbsensi.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data absensi di database.</td></tr>`;
                 return;
             }
 
@@ -200,40 +260,67 @@
             });
         }
 
-        // 3. FUNGSI HAPUS DATA ABSENSI
+        // 3. Tambah Data Absensi Baru (CREATE)
+        document.getElementById('formTambahAbsensi').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const newAbsensi = {
+                nama: document.getElementById('inputNama').value,
+                tanggal: document.getElementById('inputTanggal').value,
+                status: document.getElementById('inputStatus').value,
+                keterangan: document.getElementById('inputKeterangan').value
+            };
+
+            try {
+                const response = await fetch('/api/add-absensi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(newAbsensi)
+                });
+
+                if (response.ok) {
+                    alert('Absensi berhasil disimpan!');
+                    document.getElementById('formTambahAbsensi').reset();
+                    muatDataAbsensi(); // Reload tabel dari DB
+                } else {
+                    alert('Gagal menyimpan absensi.');
+                }
+            } catch (error) {
+                console.error('Error saat menyimpan absensi:', error);
+            }
+        });
+
+        // 4. Hapus Data Absensi (DELETE)
         async function hapusAbsensi(id) {
             if (confirm('Apakah Anda yakin ingin menghapus data absensi ini?')) {
                 try {
-                    // Ganti URL endpoint backend untuk hapus data
                     const response = await fetch(`/api/delete-absensi/${id}`, {
                         method: 'DELETE'
                     });
 
                     if (response.ok) {
                         alert('Data berhasil dihapus');
-                        muatDataAbsensi(); // Reload data dari DB
+                        muatDataAbsensi();
                     } else {
-                        alert('Gagal menghapus data di database.');
+                        alert('Gagal menghapus data.');
                     }
                 } catch (error) {
-                    console.error('Error saat menghapus data:', error);
+                    console.error('Error hapus:', error);
                 }
             }
         }
 
-        // 4. FUNGSI EDIT DATA ABSENSI
+        // 5. Buka & Isi Modal Edit Data (UPDATE)
         function bukaModalEdit(id) {
             const item = dataAbsensi.find(d => d.id == id);
             if (!item) return;
 
-            // Isi nilai form modal berdasarkan data yang dipilih
             document.getElementById('editId').value = item.id;
             document.getElementById('editNama').value = item.nama;
             document.getElementById('editTanggal').value = item.tanggal;
             document.getElementById('editStatus').value = item.status;
             document.getElementById('editKeterangan').value = item.keterangan || '';
 
-            // Tampilkan modal
             document.getElementById('modalEdit').style.display = 'block';
         }
 
@@ -241,7 +328,7 @@
             document.getElementById('modalEdit').style.display = 'none';
         }
 
-        // Handle Submit Form Edit
+        // Submit Update Absensi
         document.getElementById('formEditAbsensi').addEventListener('submit', async function(e) {
             e.preventDefault();
 
@@ -254,28 +341,28 @@
             };
 
             try {
-                // Ganti URL endpoint backend untuk update data
                 const response = await fetch(`/api/update-absensi/${id}`, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(updatedData)
                 });
 
                 if (response.ok) {
-                    alert('Data absensi berhasil diperbarui!');
+                    alert('Data berhasil diperbarui!');
                     tutupModal();
-                    muatDataAbsensi(); // Reload data terbaru dari DB
+                    muatDataAbsensi();
                 } else {
-                    alert('Gagal memperbarui data di database.');
+                    alert('Gagal memperbarui data.');
                 }
             } catch (error) {
-                console.error('Error saat memperbarui data:', error);
+                console.error('Error update:', error);
             }
         });
 
-        // Jalankan pemanggilan data saat halaman pertama dimuat
+        // Set tanggal input ke hari ini secara otomatis
+        document.getElementById('inputTanggal').valueAsDate = new Date();
+
+        // Load data dari DB saat halaman pertama kali dibuka
         document.addEventListener('DOMContentLoaded', muatDataAbsensi);
     </script>
 </body>
