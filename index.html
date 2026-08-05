@@ -501,7 +501,7 @@
         }
       }
 
-      return canvas.toDataURL('image/png');
+      return canvas.toDataURL('image/png'); // FIXED: kembalikan data URL secara eksplisit
     }
 
     function downloadPNGFile(dataUrl, filename) {
@@ -675,15 +675,14 @@
       return <i data-lucide={kebabName} className={className} style={{ width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}></i>;
     }
 
-    // Komponen Preview QR Code Ringkas 100x100px dengan Tombol Unduh PNG
+    // Komponen Preview QR Code 100x100px dengan Tombol Unduh PNG
     function SimpleQRCodeImage({ value, size = 100 }) {
       const [qrDataUrl, setQrDataUrl] = useState('');
 
       useEffect(() => {
         if (value) {
           try {
-            // Render dengan resolusi tinggi (4x = 400px) agar hasil cetak/unduhan PNG sangat tajam
-            const url = generateQRCodeDataURL(String(value).trim(), 400);
+            const url = generateQRCodeDataURL(String(value).trim(), 300);
             setQrDataUrl(url);
           } catch(err) {
             console.error('Gagal membuat QR Code:', err);
@@ -723,7 +722,7 @@
             />
           </div>
 
-          {/* Tombol Unduh Ringkas */}
+          {/* Tombol Unduh 100px */}
           <button
             type="button"
             onClick={handleDownload}
@@ -1777,7 +1776,7 @@
             </select>
           </div>
 
-          {/* Grid Kartu Siswa Dengan Preview QR Code Kompak 100x100px */}
+          {/* Grid Kartu Siswa Dengan Preview QR Code 100x100px */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudents.map((s) => (
               <div key={s.id} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-xs hover:shadow-md transition flex flex-col items-center text-center space-y-3">
@@ -1795,7 +1794,7 @@
                   <p className="text-[11px] font-mono text-slate-400 mt-0.5">NISN: {s.nisn}</p>
                 </div>
 
-                {/* Preview QR Code Ringkas 100x100px */}
+                {/* Preview QR Code 100x100px + Tombol Unduh 100px PNG */}
                 <div className="py-1">
                   <SimpleQRCodeImage value={s.nisn} size={100} />
                 </div>
