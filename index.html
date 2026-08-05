@@ -811,7 +811,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
 
         // State variables
         let settings = JSON.parse(localStorage.getItem('mi_settings')) || defaultSettings;
-        // Enforce default sheetUrl if not previously configured in localStorage
         if (!settings.sheetUrl) {
             settings.sheetUrl = defaultSettings.sheetUrl;
             localStorage.setItem('mi_settings', JSON.stringify(settings));
@@ -913,14 +912,13 @@ function saveSettingsFromObject(sheet, settingsObj) {
             
             updateSyncBadge('syncing');
             try {
-                const response = await fetch(`${settings.sheetUrl}?action=${action}`, {
+                await fetch(`${settings.sheetUrl}?action=${action}`, {
                     method: 'POST',
-                    mode: 'no-cors', // handle Google Apps Script redirect mode
+                    mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
                 
-                // Set connected indicator on fire-and-forget post
                 setTimeout(() => updateSyncBadge('connected'), 1000);
             } catch (e) {
                 console.error("Gagal sinkronisasi data ke Cloud Sheet:", e);
@@ -1113,6 +1111,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
             });
         }
 
+        // PERBAIKAN: Fungsi Pengaktifan Kamera & Pemindaian QR Code Dinamis
         function startScanner() {
             const readerEl = document.getElementById('reader');
             readerEl.innerHTML = '';
@@ -1123,24 +1122,18 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 } catch(e){}
             }
 
-            const selectVal = document.getElementById('camera-select').value;
-            const cameraConfig = selectVal ? { deviceId: { exact: selectVal } } : { facingMode: "environment" };
-
-            const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
-                const minEdgePercentage = 0.70;
-                const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
-                const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
-                return {
-                    width: Math.max(150, Math.min(qrboxSize, 300)),
-                    height: Math.max(150, Math.min(qrboxSize, 300))
-                };
-            };
-
             html5QrCode = new Html5Qrcode("reader");
-            
+
+            const selectVal = document.getElementById('camera-select').value;
+            let cameraConfig = selectVal ? { deviceId: { exact: selectVal } } : { facingMode: "environment" };
+
             const config = { 
-                fps: 15,
-                qrbox: qrboxFunction,
+                fps: 20,
+                qrbox: (viewfinderWidth, viewfinderHeight) => {
+                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                    const size = Math.floor(minEdge * 0.75);
+                    return { width: Math.max(180, size), height: Math.max(180, size) };
+                },
                 aspectRatio: 1.0,
                 experimentalFeatures: {
                     useBarCodeDetectorIfSupported: true
@@ -1152,7 +1145,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 config,
                 (decodedText) => {
                     const now = Date.now();
-                    if (decodedText === lastScannedCode && (now - lastScanTime) < 2500) {
+                    if (decodedText === lastScannedCode && (now - lastScanTime) < 2000) {
                         return;
                     }
                     lastScannedCode = decodedText;
@@ -1163,24 +1156,22 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 },
                 () => {}
             ).catch(err => {
-                console.error("Camera access error:", err);
-                if (selectVal) {
-                    html5QrCode.start(
-                        { facingMode: "environment" },
-                        config,
-                        (decodedText) => {
-                            const now = Date.now();
-                            if (decodedText === lastScannedCode && (now - lastScanTime) < 2500) return;
-                            lastScannedCode = decodedText;
-                            lastScanTime = now;
-                            playSuccessBeep();
-                            processAttendanceScan(decodedText);
-                        },
-                        () => {}
-                    ).catch(e => renderCameraError(readerEl));
-                } else {
+                console.warn("Gagal membuka kamera pilihan, mencoba mode default:", err);
+                html5QrCode.start(
+                    { facingMode: "user" },
+                    config,
+                    (decodedText) => {
+                        const now = Date.now();
+                        if (decodedText === lastScannedCode && (now - lastScanTime) < 2000) return;
+                        lastScannedCode = decodedText;
+                        lastScanTime = now;
+                        playSuccessBeep();
+                        processAttendanceScan(decodedText);
+                    },
+                    () => {}
+                ).catch(e => {
                     renderCameraError(readerEl);
-                }
+                });
             });
         }
 
@@ -1190,7 +1181,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
                     <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-rose-500"></i>
                     <p class="font-bold text-sm text-white">Gagal Membuka Kamera</p>
                     <p class="mt-1 text-gray-300 text-[11px] max-w-xs">Pastikan izin kamera diaktifkan di browser dan aplikasi berjalan pada protokol aman (HTTPS atau localhost).</p>
-                    <p class="mt-3 text-brand-300 text-[11px] font-semibold">Anda juga dapat memilih file gambar QR di menu bagian bawah.</p>
+                    <p class="mt-3 text-brand-300 text-[11px] font-semibold">Anda juga dapat menggunakan tombol upload file gambar QR di bagian bawah.</p>
                 </div>
             `;
         }
@@ -1321,6 +1312,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
             document.getElementById('scan-nisn-input').value = '';
         }
 
+        // PERBAIKAN: Fungsi Ekstraksi & Pencatatan Data NISN dari QR Code
         function processAttendanceScan(rawText) {
             let nisn = rawText.trim();
             
