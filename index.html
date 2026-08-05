@@ -675,32 +675,64 @@
       return <i data-lucide={kebabName} className={className} style={{ width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}></i>;
     }
 
-    // Component Rendering 100% Valid Standard Pure JS QR Code Image
-    function SimpleQRCodeImage({ value, size = 120 }) {
+    // Komponen Preview QR Code 250x250px dengan Tombol Unduh PNG
+    function SimpleQRCodeImage({ value, size = 250 }) {
       const [qrDataUrl, setQrDataUrl] = useState('');
 
       useEffect(() => {
         if (value) {
           try {
+            // Render dengan resolusi tinggi (2x) agar hasil unduhan jernih
             const url = generateQRCodeDataURL(String(value).trim(), size * 2);
             setQrDataUrl(url);
           } catch(err) {
-            console.error('QR Render Err:', err);
+            console.error('Gagal membuat QR Code:', err);
           }
         }
       }, [value, size]);
 
+      const handleDownload = () => {
+        if (!qrDataUrl) return;
+        const filename = `QRCode_${String(value).trim().replace(/\s+/g, '_')}_250px.png`;
+        downloadPNGFile(qrDataUrl, filename);
+      };
+
       if (!qrDataUrl) {
-        return <div style={{ width: size, height: size }} className="bg-slate-100 rounded-lg animate-pulse"></div>;
+        return (
+          <div 
+            style={{ width: size, height: size }} 
+            className="bg-slate-100 rounded-2xl animate-pulse flex items-center justify-center text-xs text-slate-400 font-medium"
+          >
+            Memuat QR...
+          </div>
+        );
       }
 
       return (
-        <img
-          src={qrDataUrl}
-          alt={`QR ${value}`}
-          style={{ width: size, height: size }}
-          className="bg-white p-1 rounded-lg border border-slate-200 object-contain shadow-xs"
-        />
+        <div className="flex flex-col items-center gap-3">
+          {/* Container Preview 250x250px */}
+          <div 
+            style={{ width: size, height: size }} 
+            className="bg-white p-3 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-center overflow-hidden hover:shadow-md transition shrink-0"
+          >
+            <img
+              src={qrDataUrl}
+              alt={`QR Code - ${value}`}
+              style={{ width: '100%', height: '100%' }}
+              className="object-contain"
+            />
+          </div>
+
+          {/* Tombol Unduh Langsung */}
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="w-full bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs px-3 py-2 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+          >
+            <Icon name="Download" size={14} />
+            <span>Unduh QR (250px PNG)</span>
+          </button>
+        </div>
       );
     }
 
@@ -1707,7 +1739,7 @@
               </div>
               <h2 className="text-2xl sm:text-3xl font-black">Data Siswa Kelas 1 - 6</h2>
               <p className="text-emerald-100 text-xs sm:text-sm mt-1 max-w-xl">
-                Unduh file QR Code murni HD (2000px × 2000px) standar ISO/IEC 18004 tanpa label kelas untuk penggunaan permanen.
+                Tampilkan preview QR Code (250x250px) atau unduh berkas PNG HD (2000px × 2000px) standar ISO/IEC 18004.
               </p>
             </div>
 
@@ -1745,32 +1777,34 @@
             </select>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Grid Tampilan Kartu Siswa Dengan Preview QR Code 250x250px */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudents.map((s) => (
-              <div key={s.id} className="bg-white rounded-3xl border border-slate-100 p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between space-y-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <span className="bg-emerald-100 text-emerald-800 font-bold px-2.5 py-0.5 rounded-full text-[10px] inline-block mb-1">
-                      Kelas {s.class}
-                    </span>
-                    <h4 className="font-bold text-slate-800 text-sm">{s.name}</h4>
-                    <p className="text-[11px] font-mono text-slate-400 mt-0.5">NISN: {s.nisn}</p>
-                  </div>
-                  <div className="shrink-0">
-                    <SimpleQRCodeImage value={s.nisn} size={64} />
-                  </div>
+              <div key={s.id} className="bg-white rounded-3xl border border-slate-100 p-6 shadow-xs hover:shadow-md transition flex flex-col items-center text-center space-y-4">
+                <div className="w-full flex items-center justify-between border-b border-slate-100 pb-3">
+                  <span className="bg-emerald-100 text-emerald-800 font-bold px-3 py-1 rounded-full text-xs">
+                    Kelas {s.class}
+                  </span>
+                  <button onClick={() => handleDeleteStudent(s.id)} className="text-slate-300 hover:text-rose-600 p-1 cursor-pointer" title="Hapus Siswa">
+                    <Icon name="Trash2" size={18} />
+                  </button>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-400">QR Valid (2000px)</span>
-                  <div className="flex items-center gap-2">
-                    <button onClick={() => handleDeleteStudent(s.id)} className="text-slate-300 hover:text-rose-600 p-1 cursor-pointer" title="Hapus Siswa">
-                      <Icon name="Trash2" size={16} />
-                    </button>
-                    <button onClick={() => handleDownloadSingleHD(s)} className="bg-emerald-800 hover:bg-emerald-900 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl shadow-xs transition flex items-center gap-1 cursor-pointer">
-                      <Icon name="Download" size={13} /> PNG HD
-                    </button>
-                  </div>
+                <div>
+                  <h4 className="font-bold text-slate-800 text-base">{s.name}</h4>
+                  <p className="text-xs font-mono text-slate-400 mt-0.5">NISN: {s.nisn}</p>
+                </div>
+
+                {/* Preview QR Code 250x250px + Tombol Unduh 250px PNG */}
+                <div className="py-2">
+                  <SimpleQRCodeImage value={s.nisn} size={250} />
+                </div>
+
+                <div className="w-full pt-3 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase">Cetak Cetak HD</span>
+                  <button onClick={() => handleDownloadSingleHD(s)} className="bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold px-3.5 py-2 rounded-xl shadow-xs transition flex items-center gap-1.5 cursor-pointer">
+                    <Icon name="Download" size={14} /> Cetak 2000px HD
+                  </button>
                 </div>
               </div>
             ))}
