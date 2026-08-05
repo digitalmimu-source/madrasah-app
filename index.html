@@ -115,7 +115,7 @@
             </nav>
 
             <div class="p-4 border-t border-brand-800 text-xs text-brand-200 text-center">
-                &copy; 2026 MI Madinatul Ulum <br>v1.2.0 Cloud-Sync
+                &copy; 2026 MI Madinatul Ulum <br>v2.0.0 Cloud-Only
             </div>
         </aside>
 
@@ -131,9 +131,9 @@
                 
                 <div class="flex items-center space-x-4">
                     <!-- Spreadsheet Status Indicator -->
-                    <div id="sync-status-indicator" onclick="manualSyncFromDB()" title="Klik untuk melakukan sinkronisasi manual" class="cursor-pointer flex items-center space-x-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-100 transition">
+                    <div id="sync-status-indicator" onclick="fetchCloudData()" title="Klik untuk memuat ulang data dari Google Spreadsheet" class="cursor-pointer flex items-center space-x-2 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-full border border-emerald-200 hover:bg-emerald-100 transition">
                         <span id="sync-dot" class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span id="sync-status-text">Memeriksa DB...</span>
+                        <span id="sync-status-text">Memeriksa Google Sheet...</span>
                         <i class="fa-solid fa-arrows-rotate text-xs ml-1" id="sync-icon"></i>
                     </div>
 
@@ -196,7 +196,7 @@
                             <div>
                                 <div class="flex items-center justify-between mb-4">
                                     <h3 class="font-bold text-gray-800 text-base">Grafik Kehadiran Minggu Ini</h3>
-                                    <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-medium">Real-time</span>
+                                    <span class="text-xs bg-gray-100 text-gray-600 px-3 py-1 rounded-full font-medium">Real-time Cloud</span>
                                 </div>
                                 <div class="h-64 relative">
                                     <canvas id="attendanceChart"></canvas>
@@ -211,7 +211,7 @@
                                     <i class="fa-solid fa-qrcode"></i>
                                 </div>
                                 <h3 class="font-bold text-lg mb-2">Mulai Absensi QR</h3>
-                                <p class="text-brand-100 text-sm mb-6">Gunakan kamera perangkat atau pemindai USB untuk merekam kehadiran siswa secara cepat.</p>
+                                <p class="text-brand-100 text-sm mb-6">Gunakan kamera perangkat atau pemindai USB untuk merekam kehadiran siswa secara langsung ke Google Sheet.</p>
                             </div>
                             <button onclick="switchTab('qr-scanner')" class="w-full bg-white text-brand-900 font-semibold py-3 px-4 rounded-xl shadow hover:bg-brand-50 transition-all text-center">
                                 Buka Scanner Sekarang <i class="fa-solid fa-arrow-right ml-2"></i>
@@ -317,7 +317,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-bold text-gray-800 text-base">Absensi Manual Kelas</h3>
-                                <p class="text-xs text-gray-500">Pilih kelas dan tanggal untuk mengisi kehadiran secara kolektif.</p>
+                                <p class="text-xs text-gray-500">Pilih kelas dan tanggal untuk mengisi presensi kolektif langsung ke Google Spreadsheet.</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <div>
@@ -354,7 +354,7 @@
                         </div>
                         <div class="mt-6 flex justify-end">
                             <button onclick="saveManualAttendance()" class="bg-brand-600 text-white font-semibold px-6 py-2.5 rounded-xl text-sm shadow-sm hover:bg-brand-700 transition">
-                                <i class="fa-solid fa-save mr-2"></i> Simpan Perubahan Absensi
+                                <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Simpan Absensi Ke Google Sheets
                             </button>
                         </div>
                     </div>
@@ -365,7 +365,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-bold text-gray-800 text-base">Daftar Siswa MI Madinatul Ulum</h3>
-                                <p class="text-xs text-gray-500">Kelola data siswa, NISN, dan kelas.</p>
+                                <p class="text-xs text-gray-500">Kelola data siswa, NISN, dan kelas di Cloud Spreadsheet.</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
                                 <input type="text" id="search-student-input" oninput="renderStudentsTable()" placeholder="Cari nama atau NISN..." class="border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
@@ -433,7 +433,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-bold text-gray-800 text-base">Rekapitulasi Kehadiran Siswa</h3>
-                                <p class="text-xs text-gray-500">Laporan lengkap absensi berdasarkan rentang tanggal.</p>
+                                <p class="text-xs text-gray-500">Laporan lengkap absensi berdasarkan rentang tanggal. Anda dapat mengedit status atau menghapus rekaman absensi.</p>
                             </div>
                             <div class="flex flex-wrap items-center gap-3">
                                 <div>
@@ -458,8 +458,9 @@
                                         <th class="py-3 px-4">NISN</th>
                                         <th class="py-3 px-4">Nama Siswa</th>
                                         <th class="py-3 px-4">Kelas</th>
-                                        <th class="py-3 px-4">Waktu Absen</th>
+                                        <th class="py-3 px-4">Waktu</th>
                                         <th class="py-3 px-4">Status</th>
+                                        <th class="py-3 px-4 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="reports-tbody" class="divide-y divide-gray-50 text-sm">
@@ -479,7 +480,7 @@
                         <div class="relative z-10">
                             <div class="flex items-center justify-between mb-3">
                                 <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">
-                                    <i class="fa-solid fa-cloud mr-1"></i> Cloud Database Backend
+                                    <i class="fa-solid fa-cloud mr-1"></i> Cloud Database Backend (Mandatory)
                                 </span>
                                 <button onclick="openGasModal()" class="text-xs bg-white text-emerald-900 font-bold px-3 py-1.5 rounded-lg hover:bg-emerald-50 transition shadow">
                                     <i class="fa-solid fa-code mr-1"></i> Salin Script Google & Petunjuk
@@ -487,7 +488,7 @@
                             </div>
                             <h3 class="font-bold text-xl text-white mb-2">Integrasi Google Spreadsheet DB</h3>
                             <p class="text-xs text-emerald-100 leading-relaxed mb-4">
-                                Hubungkan aplikasi ini langsung ke Google Spreadsheet milik Anda. Semua data siswa, absensi harian, dan konfigurasi akan tersimpan aman di Google Drive sekolah.
+                                Aplikasi ini berjalan **Full Cloud tanpa LocalStorage**. Masukkan URL Web App dari Apps Script Anda di bawah ini agar semua data tersimpan secara terpusat.
                             </p>
                             
                             <div class="space-y-3">
@@ -496,13 +497,12 @@
                                     <div class="flex space-x-2">
                                         <input type="url" id="setting-sheet-url" placeholder="https://script.google.com/macros/s/.../exec" class="flex-1 bg-emerald-950 border border-emerald-700 text-white placeholder-emerald-500 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-400">
                                         <button onclick="testAndSaveSheetUrl()" class="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-4 py-2.5 rounded-xl text-xs transition whitespace-nowrap shadow">
-                                            <i class="fa-solid fa-plug mr-1"></i> Tes & Hubungkan
+                                            <i class="fa-solid fa-plug mr-1"></i> Hubungkan DB
                                         </button>
                                     </div>
                                 </div>
                                 <div class="flex items-center justify-between pt-2 text-xs text-emerald-200">
                                     <span id="sheet-conn-status"><i class="fa-solid fa-circle-info mr-1"></i> Status: Belum Terhubung</span>
-                                    <button onclick="pushLocalToCloud()" class="underline hover:text-white"><i class="fa-solid fa-cloud-arrow-up mr-1"></i> Upload Data Lokal ke Sheet</button>
                                 </div>
                             </div>
                         </div>
@@ -510,7 +510,7 @@
 
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 max-w-2xl mx-auto">
                         <h3 class="font-bold text-gray-800 text-lg mb-1">Pengaturan Identitas Madrasah</h3>
-                        <p class="text-xs text-gray-500 mb-6">Sesuaikan identitas madrasah untuk kartu QR, kop surat, dan laporan.</p>
+                        <p class="text-xs text-gray-500 mb-6">Sesuaikan identitas madrasah untuk kartu QR, kop surat, dan laporan (Tersimpan di Sheet Pengaturan).</p>
                         
                         <form onsubmit="saveSettings(event)" class="space-y-4">
                             <div>
@@ -556,7 +556,7 @@
 
     <!-- Student Edit/Add Modal -->
     <div id="student-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative animate-in fade-in zoom-in duration-200">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative">
             <h3 id="student-modal-title" class="font-bold text-lg text-gray-800 mb-4">Tambah Siswa Baru</h3>
             <form onsubmit="handleStudentFormSubmit(event)" class="space-y-4">
                 <input type="hidden" id="student-edit-id">
@@ -596,13 +596,50 @@
         </div>
     </div>
 
+    <!-- Attendance Edit Modal (Fitur Edit Rekap) -->
+    <div id="attendance-edit-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl relative">
+            <h3 class="font-bold text-lg text-gray-800 mb-4">Edit Rekapan Absensi</h3>
+            <form onsubmit="handleAttendanceEditSubmit(event)" class="space-y-4">
+                <input type="hidden" id="edit-att-id">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Siswa</label>
+                    <input type="text" id="edit-att-name" class="w-full bg-gray-100 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 font-medium cursor-not-allowed" readonly>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Tanggal</label>
+                        <input type="date" id="edit-att-date" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Waktu</label>
+                        <input type="time" id="edit-att-time" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 uppercase mb-1">Status Kehadiran</label>
+                    <select id="edit-att-status" class="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <option value="Hadir">Hadir</option>
+                        <option value="Sakit">Sakit</option>
+                        <option value="Izin">Izin</option>
+                        <option value="Alpha">Alpha</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeAttendanceEditModal()" class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Batal</button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 transition shadow-sm">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Modal Instructions and Script for Google Apps Script -->
     <div id="gas-modal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden overflow-y-auto">
         <div class="bg-white rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-8 max-h-[90vh] flex flex-col">
             <div class="flex items-center justify-between pb-4 border-b border-gray-200">
                 <div class="flex items-center space-x-2 text-emerald-800">
                     <i class="fa-solid fa-file-excel text-2xl"></i>
-                    <h3 class="font-bold text-lg">Panduan & Kode Google Apps Script</h3>
+                    <h3 class="font-bold text-lg">Panduan & Kode Google Apps Script (v2.0 Full Cloud)</h3>
                 </div>
                 <button onclick="closeGasModal()" class="text-gray-400 hover:text-gray-600 text-xl font-bold">
                     <i class="fa-solid fa-xmark"></i>
@@ -611,27 +648,17 @@
             
             <div class="p-2 overflow-y-auto flex-1 space-y-4 text-xs text-gray-600 leading-relaxed">
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-emerald-900">
-                    <strong>Langkah 1: Membuat Google Spreadsheet</strong>
-                    <ol class="list-decimal list-inside mt-1 space-y-1">
-                        <li>Buka <a href="https://sheets.new" target="_blank" class="underline font-bold text-emerald-700">sheets.new</a> untuk membuat Google Spreadsheet baru.</li>
-                        <li>Beri nama file Spreadsheet (misal: <em>Database Absensi MI Madinatul Ulum</em>).</li>
-                        <li>Di menu atas, klik <strong>Ekstensi (Extensions)</strong> &gt; <strong>Apps Script</strong>.</li>
-                    </ol>
-                </div>
-
-                <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-emerald-900">
-                    <strong>Langkah 2: Salin & Tempel Kode Script</strong>
-                    <p class="mt-1">Hapus semua isi editor bawaan Google Apps Script, lalu salin dan tempelkan kode di bawah ini:</p>
+                    <strong>Penting!</strong> Salin dan timpa semua isi Google Apps Script Anda dengan kode terbaru di bawah agar mendukung fitur **Edit Rekap** dan **Penghapusan Absensi Cloud**.
                 </div>
 
                 <!-- Code Container -->
                 <div class="relative bg-gray-900 text-emerald-300 p-4 rounded-xl font-mono text-[11px] overflow-x-auto shadow-inner">
                     <button onclick="copyGasScript()" class="absolute top-2 right-2 bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1 rounded text-xs font-sans font-bold shadow">
-                        <i class="fa-solid fa-copy mr-1"></i> Salin Kode
+                        <i class="fa-solid fa-copy mr-1"></i> Salin Kode GAS
                     </button>
-                    <pre id="gas-code-text"><code>// ==========================================
-// KODE GOOGLE APPS SCRIPT - DATABASE ABSENSI
-// ==========================================
+                    <pre id="gas-code-text"><code>// ========================================================
+// KODE GOOGLE APPS SCRIPT v2.0 - DATABASE ABSENSI FULL CLOUD
+// ========================================================
 
 function doGet(e) {
   return handleRequest(e);
@@ -650,7 +677,6 @@ function handleRequest(e) {
     var action = e.parameter.action;
     var result = { success: false };
     
-    // Pastikan sheet otomatis dibuat jika belum ada
     var sheetStudents = getOrCreateSheet(ss, "Siswa", ["ID", "NISN", "Nama", "Kelas", "Gender"]);
     var sheetAttendance = getOrCreateSheet(ss, "Absensi", ["ID", "StudentID", "NISN", "Nama", "Kelas", "Tanggal", "Waktu", "Status"]);
     var sheetSettings = getOrCreateSheet(ss, "Pengaturan", ["Key", "Value"]);
@@ -672,6 +698,16 @@ function handleRequest(e) {
       var body = JSON.parse(e.postData.contents);
       saveObjectsToSheet(sheetAttendance, body.attendance, ["id", "studentId", "nisn", "name", "class", "date", "time", "status"]);
       result = { success: true, message: "Log absensi berhasil disimpan!" };
+    }
+    else if (action === "update_attendance" && e.postData) {
+      var body = JSON.parse(e.postData.contents);
+      updateRowInSheet(sheetAttendance, body.item, "id");
+      result = { success: true, message: "Absensi berhasil diperbarui!" };
+    }
+    else if (action === "delete_attendance" && e.postData) {
+      var body = JSON.parse(e.postData.contents);
+      deleteRowFromSheet(sheetAttendance, body.id, "id");
+      result = { success: true, message: "Absensi berhasil dihapus!" };
     }
     else if (action === "sync_settings" && e.postData) {
       var body = JSON.parse(e.postData.contents);
@@ -720,7 +756,6 @@ function getSheetDataAsObjects(sheet) {
 
 function saveObjectsToSheet(sheet, items, keys) {
   sheet.clearContents();
-  // Append Headers
   var headers = keys.map(function(k){ return k.toUpperCase(); });
   sheet.appendRow(headers);
   sheet.getRange(1, 1, 1, headers.length).setFontWeight("bold").setBackground("#dcfce7");
@@ -730,6 +765,36 @@ function saveObjectsToSheet(sheet, items, keys) {
     return keys.map(function(k){ return item[k] || ""; });
   });
   sheet.getRange(2, 1, rows.length, keys.length).setValues(rows);
+}
+
+function updateRowInSheet(sheet, item, keyName) {
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return;
+  var headers = data[0].map(function(h){ return h.toString().toLowerCase(); });
+  var keyIdx = headers.indexOf(keyName.toLowerCase());
+  
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][keyIdx]) === String(item[keyName])) {
+      sheet.getRange(i + 1, 6).setValue(item.date);
+      sheet.getRange(i + 1, 7).setValue(item.time);
+      sheet.getRange(i + 1, 8).setValue(item.status);
+      break;
+    }
+  }
+}
+
+function deleteRowFromSheet(sheet, idValue, keyName) {
+  var data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return;
+  var headers = data[0].map(function(h){ return h.toString().toLowerCase(); });
+  var keyIdx = headers.indexOf(keyName.toLowerCase());
+  
+  for (var i = 1; i < data.length; i++) {
+    if (String(data[i][keyIdx]) === String(idValue)) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
 }
 
 function getSettingsAsObject(sheet) {
@@ -754,17 +819,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
   }
 }</code></pre>
                 </div>
-
-                <div class="bg-amber-50 p-3 rounded-xl border border-amber-200 text-amber-900">
-                    <strong>Langkah 3: Deploy sebagai Web App</strong>
-                    <ol class="list-decimal list-inside mt-1 space-y-1">
-                        <li>Klik tombol <strong>Penerapan (Deploy)</strong> di kanan atas &gt; pilih <strong>Penerapan baru (New deployment)</strong>.</li>
-                        <li>Pilih jenis deployment: <strong>Aplikasi web (Web app)</strong>.</li>
-                        <li>Ubah <em>"Siapa yang memiliki akses" (Who has access)</em> menjadi: <strong>Siapa saja (Anyone)</strong>.</li>
-                        <li>Klik <strong>Terapkan (Deploy)</strong> dan berikan izin (*Authorize access*).</li>
-                        <li>Salin **URL Aplikasi Web** yang dihasilkan, lalu tempelkan pada kolom URL Pengaturan Database di aplikasi ini.</li>
-                    </ol>
-                </div>
             </div>
 
             <div class="pt-4 border-t border-gray-200 flex justify-end">
@@ -786,8 +840,8 @@ function saveSettingsFromObject(sheet, settingsObj) {
     </div>
 
     <script>
-        // Initial Default Mock Data
-        const defaultSettings = {
+        // DEFAULT CONFIG - APPS SCRIPT URL HANYA DISIMPAM PADA VARIABLE JS IN-MEMORY
+        let settings = {
             name: "MI Madinatul Ulum",
             nsm: "111235070001",
             npsn: "60701234",
@@ -797,27 +851,9 @@ function saveSettingsFromObject(sheet, settingsObj) {
             sheetUrl: "https://script.google.com/macros/s/AKfycbx38CxX2ryNoIx65_2RNSWcW_QYyeXCZ3RGrQd4VL0W8Kdt1IAtURGhDoqhrnFrL7sY-g/exec"
         };
 
-        const defaultStudents = [
-            { id: "1", nisn: "0081234001", name: "Ahmad Fauzi", class: "4", gender: "L" },
-            { id: "2", nisn: "0081234002", name: "Siti Nur Aisyah", class: "4", gender: "P" },
-            { id: "3", nisn: "0081234003", name: "Muhammad Rizki", class: "4", gender: "L" },
-            { id: "4", nisn: "0081234004", name: "Dewi Lestari", class: "4", gender: "P" },
-            { id: "5", nisn: "0081234005", name: "Umar Faruq", class: "1", gender: "L" },
-            { id: "6", nisn: "0081234006", name: "Fatimah Zahra", class: "2", gender: "P" },
-            { id: "7", nisn: "0081234007", name: "Zainal Abidin", class: "3", gender: "L" },
-            { id: "8", nisn: "0081234008", name: "Aisyah Putri", class: "5", gender: "P" },
-            { id: "9", nisn: "0081234009", name: "Ibrahim Malik", class: "6", gender: "L" },
-        ];
-
-        // State variables
-        let settings = JSON.parse(localStorage.getItem('mi_settings')) || defaultSettings;
-        if (!settings.sheetUrl) {
-            settings.sheetUrl = defaultSettings.sheetUrl;
-            localStorage.setItem('mi_settings', JSON.stringify(settings));
-        }
-
-        let students = JSON.parse(localStorage.getItem('mi_students')) || defaultStudents;
-        let attendance = JSON.parse(localStorage.getItem('mi_attendance')) || [];
+        // Standard memory-only state (Tanpa LocalStorage)
+        let students = [];
+        let attendance = [];
         
         let html5QrCode = null;
         let attendanceChartInstance = null;
@@ -826,28 +862,19 @@ function saveSettingsFromObject(sheet, settingsObj) {
         let isDbConnected = false;
 
         window.onload = function() {
+            // Hapus paksa localStorage jika pernah tersimpan sebelumnya
+            localStorage.clear();
+
             applySettingsToUI();
             initDates();
             switchTab('dashboard');
             loadCameraOptions();
-            
-            // Seed sample attendance for today if empty
-            const todayStr = getTodayDateStr();
-            if(attendance.filter(a => a.date === todayStr).length === 0) {
-                attendance.push({ id: crypto.randomUUID(), studentId: "1", nisn: "0081234001", name: "Ahmad Fauzi", class: "4", date: todayStr, time: "07:15", status: "Hadir" });
-                attendance.push({ id: crypto.randomUUID(), studentId: "2", nisn: "0081234002", name: "Siti Nur Aisyah", class: "4", date: todayStr, time: "07:20", status: "Hadir" });
-                attendance.push({ id: crypto.randomUUID(), studentId: "3", nisn: "0081234003", name: "Muhammad Rizki", class: "4", date: todayStr, time: "07:25", status: "Sakit" });
-                saveToLocalStorage();
-            }
-            
-            updateDashboardStats();
-            renderAttendanceChart();
 
-            // Try pulling cloud data on start
+            // Panggil DB Cloud Google Sheets langsung saat load
             if (settings.sheetUrl) {
-                pullFromSpreadsheet();
+                fetchCloudData();
             } else {
-                updateSyncBadge('local', 'Offline / LocalStorage');
+                updateSyncBadge('local', 'URL DB Belum Diatur');
             }
         };
 
@@ -863,16 +890,16 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 if(connText) connText.innerHTML = `<span class="text-emerald-300 font-bold"><i class="fa-solid fa-check-circle mr-1"></i> Terhubung ke Google Spreadsheet</span>`;
             } else if (status === 'syncing') {
                 dot.className = "w-2.5 h-2.5 rounded-full bg-amber-400 animate-ping";
-                textEl.innerText = "Menyinkronkan...";
+                textEl.innerText = "Menyinkronkan Cloud...";
             } else {
                 isDbConnected = false;
                 dot.className = "w-2.5 h-2.5 rounded-full bg-gray-400";
-                textEl.innerText = text || "Mode Lokal";
+                textEl.innerText = text || "Terputus dari Sheet";
                 if(connText) connText.innerHTML = `<span class="text-amber-300"><i class="fa-solid fa-triangle-exclamation mr-1"></i> ${text || "Belum Terhubung"}</span>`;
             }
         }
 
-        async function pullFromSpreadsheet() {
+        async function fetchCloudData() {
             if (!settings.sheetUrl) return;
             updateSyncBadge('syncing');
 
@@ -881,23 +908,18 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 const data = await response.json();
 
                 if (data && data.success) {
-                    if (data.students && data.students.length > 0) {
-                        students = data.students;
-                        localStorage.setItem('mi_students', JSON.stringify(students));
-                    }
-                    if (data.attendance && data.attendance.length > 0) {
-                        attendance = data.attendance;
-                        localStorage.setItem('mi_attendance', JSON.stringify(attendance));
-                    }
+                    students = data.students || [];
+                    attendance = data.attendance || [];
                     if (data.settings && data.settings.name) {
                         settings = { ...settings, ...data.settings };
-                        localStorage.setItem('mi_settings', JSON.stringify(settings));
                         applySettingsToUI();
                     }
 
                     updateSyncBadge('connected');
                     updateDashboardStats();
                     renderAttendanceChart();
+                    renderReportsTable();
+                    renderStudentsTable();
                 } else {
                     updateSyncBadge('local', 'Gagal memuat DB Cloud');
                 }
@@ -919,9 +941,12 @@ function saveSettingsFromObject(sheet, settingsObj) {
                     body: JSON.stringify(payload)
                 });
                 
-                setTimeout(() => updateSyncBadge('connected'), 1000);
+                setTimeout(() => {
+                    updateSyncBadge('connected');
+                    fetchCloudData(); // Segarkan data langsung dari Sheet
+                }, 1000);
             } catch (e) {
-                console.error("Gagal sinkronisasi data ke Cloud Sheet:", e);
+                console.error("Gagal mengirim data ke Cloud Sheet:", e);
                 updateSyncBadge('local', 'Error Sync');
             }
         }
@@ -934,36 +959,12 @@ function saveSettingsFromObject(sheet, settingsObj) {
             }
 
             settings.sheetUrl = urlInput;
-            saveToLocalStorage();
-            
             showNotification('Proses...', 'Sedang menguji koneksi ke Google Spreadsheet...');
-            pullFromSpreadsheet().then(() => {
+            fetchCloudData().then(() => {
                 if(isDbConnected) {
                     showNotification('Berhasil!', 'Koneksi ke Google Spreadsheet berhasil terhubung!');
                 }
             });
-        }
-
-        function manualSyncFromDB() {
-            if (!settings.sheetUrl) {
-                showNotification('Belum Dikonfigurasi', 'Masukkan URL Google Apps Script di tab Pengaturan & DB.', 'error');
-                return;
-            }
-            pullFromSpreadsheet().then(() => {
-                showNotification('Sinkronisasi Selesai', 'Data terbaru telah ditarik dari Google Spreadsheet.');
-            });
-        }
-
-        function pushLocalToCloud() {
-            if (!settings.sheetUrl) {
-                showNotification('Gagal', 'URL Google Spreadsheet belum disetel.', 'error');
-                return;
-            }
-
-            syncToSpreadsheet('sync_students', { students: students });
-            syncToSpreadsheet('sync_attendance', { attendance: attendance });
-            syncToSpreadsheet('sync_settings', { settings: settings });
-            showNotification('Mengirim Data', 'Semua data lokal sedang diunggah ke Google Spreadsheet...');
         }
 
         function playSuccessBeep() {
@@ -980,12 +981,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 osc.start();
                 osc.stop(audioCtx.currentTime + 0.2);
             } catch(e){}
-        }
-
-        function saveToLocalStorage() {
-            localStorage.setItem('mi_settings', JSON.stringify(settings));
-            localStorage.setItem('mi_students', JSON.stringify(students));
-            localStorage.setItem('mi_attendance', JSON.stringify(attendance));
         }
 
         function getTodayDateStr() {
@@ -1111,7 +1106,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
             });
         }
 
-        // PERBAIKAN: Fungsi Pengaktifan Kamera & Pemindaian QR Code Dinamis
         function startScanner() {
             const readerEl = document.getElementById('reader');
             readerEl.innerHTML = '';
@@ -1122,18 +1116,24 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 } catch(e){}
             }
 
-            html5QrCode = new Html5Qrcode("reader");
-
             const selectVal = document.getElementById('camera-select').value;
-            let cameraConfig = selectVal ? { deviceId: { exact: selectVal } } : { facingMode: "environment" };
+            const cameraConfig = selectVal ? { deviceId: { exact: selectVal } } : { facingMode: "environment" };
 
+            const qrboxFunction = function(viewfinderWidth, viewfinderHeight) {
+                const minEdgePercentage = 0.70;
+                const minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
+                const qrboxSize = Math.floor(minEdgeSize * minEdgePercentage);
+                return {
+                    width: Math.max(150, Math.min(qrboxSize, 300)),
+                    height: Math.max(150, Math.min(qrboxSize, 300))
+                };
+            };
+
+            html5QrCode = new Html5Qrcode("reader");
+            
             const config = { 
-                fps: 20,
-                qrbox: (viewfinderWidth, viewfinderHeight) => {
-                    const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-                    const size = Math.floor(minEdge * 0.75);
-                    return { width: Math.max(180, size), height: Math.max(180, size) };
-                },
+                fps: 15,
+                qrbox: qrboxFunction,
                 aspectRatio: 1.0,
                 experimentalFeatures: {
                     useBarCodeDetectorIfSupported: true
@@ -1145,7 +1145,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 config,
                 (decodedText) => {
                     const now = Date.now();
-                    if (decodedText === lastScannedCode && (now - lastScanTime) < 2000) {
+                    if (decodedText === lastScannedCode && (now - lastScanTime) < 2500) {
                         return;
                     }
                     lastScannedCode = decodedText;
@@ -1156,22 +1156,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 },
                 () => {}
             ).catch(err => {
-                console.warn("Gagal membuka kamera pilihan, mencoba mode default:", err);
-                html5QrCode.start(
-                    { facingMode: "user" },
-                    config,
-                    (decodedText) => {
-                        const now = Date.now();
-                        if (decodedText === lastScannedCode && (now - lastScanTime) < 2000) return;
-                        lastScannedCode = decodedText;
-                        lastScanTime = now;
-                        playSuccessBeep();
-                        processAttendanceScan(decodedText);
-                    },
-                    () => {}
-                ).catch(e => {
-                    renderCameraError(readerEl);
-                });
+                renderCameraError(readerEl);
             });
         }
 
@@ -1181,7 +1166,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
                     <i class="fa-solid fa-triangle-exclamation text-3xl mb-2 text-rose-500"></i>
                     <p class="font-bold text-sm text-white">Gagal Membuka Kamera</p>
                     <p class="mt-1 text-gray-300 text-[11px] max-w-xs">Pastikan izin kamera diaktifkan di browser dan aplikasi berjalan pada protokol aman (HTTPS atau localhost).</p>
-                    <p class="mt-3 text-brand-300 text-[11px] font-semibold">Anda juga dapat menggunakan tombol upload file gambar QR di bagian bawah.</p>
                 </div>
             `;
         }
@@ -1312,7 +1296,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
             document.getElementById('scan-nisn-input').value = '';
         }
 
-        // PERBAIKAN: Fungsi Ekstraksi & Pencatatan Data NISN dari QR Code
         function processAttendanceScan(rawText) {
             let nisn = rawText.trim();
             
@@ -1338,7 +1321,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
 
             if(!student) {
                 titleEl.innerText = "Siswa Tidak Ditemukan!";
-                descEl.innerText = `NISN / QR: ${nisn} tidak terdaftar dalam database.`;
+                descEl.innerText = `NISN / QR: ${nisn} tidak terdaftar.`;
                 iconEl.className = "w-12 h-12 rounded-full flex items-center justify-center text-xl bg-rose-100 text-rose-600";
                 iconEl.innerHTML = '<i class="fa-solid fa-xmark"></i>';
                 return;
@@ -1364,7 +1347,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 });
             }
 
-            saveToLocalStorage();
             syncToSpreadsheet('sync_attendance', { attendance: attendance });
 
             titleEl.innerText = "Absensi Berhasil Tercatat!";
@@ -1450,15 +1432,14 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 }
             });
 
-            saveToLocalStorage();
             syncToSpreadsheet('sync_attendance', { attendance: attendance });
-            showNotification('Berhasil', 'Data absensi manual telah disimpan dan disinkronkan.');
+            showNotification('Mengirim...', 'Data absensi manual sedang disimpan ke Google Spreadsheet.');
         }
 
         function renderStudentsTable() {
             const search = (document.getElementById('search-student-input').value || '').toLowerCase();
             const tbody = document.getElementById('students-tbody');
-            const filtered = students.filter(s => s.name.toLowerCase().includes(search) || s.nisn.includes(search));
+            const filtered = students.filter(s => (s.name || '').toLowerCase().includes(search) || (s.nisn || '').includes(search));
 
             if (filtered.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-gray-400">Tidak ada data siswa</td></tr>`;
@@ -1534,21 +1515,16 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 });
             }
 
-            saveToLocalStorage();
             syncToSpreadsheet('sync_students', { students: students });
-
             closeStudentModal();
-            renderStudentsTable();
-            showNotification('Berhasil', 'Data siswa berhasil disimpan dan disinkronkan.');
+            showNotification('Proses', 'Data siswa dikirim ke Google Sheet...');
         }
 
         function deleteStudent(id) {
+            if(!confirm("Yakin ingin menghapus siswa ini?")) return;
             students = students.filter(s => s.id !== id);
-            saveToLocalStorage();
             syncToSpreadsheet('sync_students', { students: students });
-
-            renderStudentsTable();
-            showNotification('Berhasil', 'Data siswa telah dihapus.');
+            showNotification('Menghapus', 'Data siswa diperbarui di Cloud Sheet.');
         }
 
         function downloadStudentTemplateCSV() {
@@ -1627,9 +1603,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
             }
 
             if (addedCount > 0 || updatedCount > 0) {
-                saveToLocalStorage();
                 syncToSpreadsheet('sync_students', { students: students });
-                renderStudentsTable();
                 showNotification('Import Berhasil', `${addedCount} siswa baru ditambahkan dan ${updatedCount} siswa diperbarui.`);
             } else {
                 showNotification('Format Tidak Cocok', 'Pastikan kolom CSV berurutan: NISN, Nama Lengkap, Kelas, Jenis Kelamin (L/P).', 'error');
@@ -1735,6 +1709,9 @@ function saveSettingsFromObject(sheet, settingsObj) {
             });
         }
 
+        // ==========================================
+        // FITUR REKAPITULASI (LENGKAP EDIT & HAPUS)
+        // ==========================================
         function renderReportsTable() {
             const startDate = document.getElementById('report-start-date').value;
             const endDate = document.getElementById('report-end-date').value;
@@ -1743,7 +1720,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
             const filtered = attendance.filter(a => a.date >= startDate && a.date <= endDate);
 
             if(filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-gray-400">Tidak ada data rekap pada rentang tanggal tersebut</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" class="py-4 text-center text-gray-400">Tidak ada data rekap pada rentang tanggal tersebut</td></tr>`;
                 return;
             }
 
@@ -1759,8 +1736,60 @@ function saveSettingsFromObject(sheet, settingsObj) {
                             ${item.status}
                         </span>
                     </td>
+                    <td class="py-3 px-4 text-center space-x-2">
+                        <button onclick="openAttendanceEditModal('${item.id}')" class="text-blue-600 hover:text-blue-800 text-xs font-medium px-2 py-1 rounded bg-blue-50">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit
+                        </button>
+                        <button onclick="deleteAttendanceRecord('${item.id}')" class="text-rose-600 hover:text-rose-800 text-xs font-medium px-2 py-1 rounded bg-rose-50">
+                            <i class="fa-solid fa-trash"></i> Hapus
+                        </button>
+                    </td>
                 </tr>
             `).join('');
+        }
+
+        function openAttendanceEditModal(id) {
+            const record = attendance.find(a => a.id === id);
+            if (!record) return;
+
+            document.getElementById('edit-att-id').value = record.id;
+            document.getElementById('edit-att-name').value = `${record.name} (NISN: ${record.nisn})`;
+            document.getElementById('edit-att-date').value = record.date;
+            document.getElementById('edit-att-time').value = record.time || '07:00';
+            document.getElementById('edit-att-status').value = record.status;
+
+            document.getElementById('attendance-edit-modal').classList.remove('hidden');
+        }
+
+        function closeAttendanceEditModal() {
+            document.getElementById('attendance-edit-modal').classList.add('hidden');
+        }
+
+        function handleAttendanceEditSubmit(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-att-id').value;
+            const newDate = document.getElementById('edit-att-date').value;
+            const newTime = document.getElementById('edit-att-time').value;
+            const newStatus = document.getElementById('edit-att-status').value;
+
+            const idx = attendance.findIndex(a => a.id === id);
+            if (idx >= 0) {
+                attendance[idx].date = newDate;
+                attendance[idx].time = newTime;
+                attendance[idx].status = newStatus;
+
+                syncToSpreadsheet('update_attendance', { item: attendance[idx] });
+                closeAttendanceEditModal();
+                showNotification('Proses Edit', 'Perubahan absensi sedang dikirim ke Google Sheet...');
+            }
+        }
+
+        function deleteAttendanceRecord(id) {
+            if(!confirm("Apakah Anda yakin ingin menghapus catatan absensi ini dari Google Sheet?")) return;
+
+            attendance = attendance.filter(a => a.id !== id);
+            syncToSpreadsheet('delete_attendance', { id: id });
+            showNotification('Proses Hapus', 'Data absensi dihapus dari Google Sheet...');
         }
 
         function exportReportCSV() {
@@ -1792,11 +1821,9 @@ function saveSettingsFromObject(sheet, settingsObj) {
             settings.year = document.getElementById('setting-year').value;
             settings.sheetUrl = document.getElementById('setting-sheet-url').value.trim();
 
-            saveToLocalStorage();
             syncToSpreadsheet('sync_settings', { settings: settings });
-
             applySettingsToUI();
-            showNotification('Berhasil', 'Pengaturan madrasah berhasil diperbarui.');
+            showNotification('Berhasil', 'Pengaturan madrasah berhasil diperbarui di Google Spreadsheet.');
         }
 
         function openGasModal() {
@@ -1815,7 +1842,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
             tempTextArea.select();
             document.execCommand('copy');
             document.body.removeChild(tempTextArea);
-            showNotification('Tersalin!', 'Kode Google Apps Script berhasil disalin ke clipboard.');
+            showNotification('Tersalin!', 'Kode Google Apps Script v2.0 berhasil disalin ke clipboard.');
         }
 
         function showNotification(title, message, type = 'success') {
