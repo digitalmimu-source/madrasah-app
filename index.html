@@ -147,7 +147,6 @@
                 </div>
             </header>
 
-            <!-- Scrollable Content Viewport -->
             <main class="flex-1 overflow-y-auto p-4 md:p-8 bg-gray-50 relative">
                 
                 <div id="view-dashboard" class="space-y-6 tab-view">
@@ -190,7 +189,6 @@
                         </div>
                     </div>
 
-                    <!-- Quick Action & Chart Section -->
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 lg:col-span-2 flex flex-col justify-between">
                             <div>
@@ -405,7 +403,7 @@
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                             <div>
                                 <h3 class="font-bold text-gray-800 text-base">Cetak & Unduh Kartu QR Code Siswa</h3>
-                                <p class="text-xs text-gray-500">QR Code berbasis NISN & Nama tetap berlaku saat siswa naik kelas. Dapat diunduh dalam format PNG.</p>
+                                <p class="text-xs text-gray-500">QR Code berbasis NISN & Nama tetap berlaku saat siswa naik kelas. Dapat diunduh dalam format PNG yang solid dan jelas.</p>
                             </div>
                             <div class="flex items-center space-x-3">
                                 <select id="generator-class-filter" onchange="renderQRGeneratorGrid()" class="border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
@@ -827,6 +825,21 @@ function saveSettingsFromObject(sheet, settingsObj) {
         </div>
     </div>
 
+    <!-- Custom Confirmation Modal (Replaces window.confirm) -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-xl">
+            <div class="w-16 h-16 rounded-full bg-amber-100 text-amber-600 mx-auto flex items-center justify-center text-2xl mb-4">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h4 id="confirm-title" class="font-bold text-gray-800 text-lg mb-1">Konfirmasi</h4>
+            <p id="confirm-message" class="text-sm text-gray-500 mb-6">Apakah Anda yakin ingin melakukan tindakan ini?</p>
+            <div class="flex space-x-3">
+                <button onclick="closeConfirmModal(false)" class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-600 hover:bg-gray-50 transition">Batal</button>
+                <button id="confirm-ok-btn" class="flex-1 py-2.5 rounded-xl bg-rose-600 text-white text-sm font-medium hover:bg-rose-700 transition shadow-sm">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Custom Notification Modal -->
     <div id="notification-modal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl w-full max-w-sm p-6 text-center shadow-xl">
@@ -840,7 +853,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
     </div>
 
     <script>
-        // DEFAULT CONFIG - APPS SCRIPT URL HANYA DISIMPAN PADA VARIABLE JS IN-MEMORY
         let settings = {
             name: "MI Madinatul Ulum",
             nsm: "111235070001",
@@ -851,7 +863,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
             sheetUrl: "https://script.google.com/macros/s/AKfycbxCcfB23NxNetNkzcUMAL1E_2JOGUbo9vMjM0TLI1BQimn4h3n-Azf2W17FPme8xx2Dxw/exec"
         };
 
-        // Standard memory-only state (Tanpa LocalStorage)
         let students = [];
         let attendance = [];
         
@@ -860,9 +871,9 @@ function saveSettingsFromObject(sheet, settingsObj) {
         let lastScannedCode = null;
         let lastScanTime = 0;
         let isDbConnected = false;
+        let pendingConfirmCallback = null;
 
         window.onload = function() {
-            // Hapus paksa localStorage jika pernah tersimpan sebelumnya
             localStorage.clear();
 
             applySettingsToUI();
@@ -870,7 +881,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
             switchTab('dashboard');
             loadCameraOptions();
 
-            // Panggil DB Cloud Google Sheets langsung saat load
             if (settings.sheetUrl) {
                 fetchCloudData();
             } else {
@@ -943,7 +953,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
                 
                 setTimeout(() => {
                     updateSyncBadge('connected');
-                    fetchCloudData(); // Segarkan data langsung dari Sheet
+                    fetchCloudData();
                 }, 1000);
             } catch (e) {
                 console.error("Gagal mengirim data ke Cloud Sheet:", e);
@@ -1521,10 +1531,11 @@ function saveSettingsFromObject(sheet, settingsObj) {
         }
 
         function deleteStudent(id) {
-            if(!confirm("Yakin ingin menghapus siswa ini?")) return;
-            students = students.filter(s => s.id !== id);
-            syncToSpreadsheet('sync_students', { students: students });
-            showNotification('Menghapus', 'Data siswa diperbarui di Cloud Sheet.');
+            showConfirm("Hapus Siswa", "Apakah Anda yakin ingin menghapus data siswa ini?", () => {
+                students = students.filter(s => s.id !== id);
+                syncToSpreadsheet('sync_students', { students: students });
+                showNotification('Menghapus', 'Data siswa diperbarui di Cloud Sheet.');
+            });
         }
 
         function downloadStudentTemplateCSV() {
@@ -1652,8 +1663,8 @@ function saveSettingsFromObject(sheet, settingsObj) {
 
                     new QRCode(el, {
                         text: qrData,
-                        width: 110,
-                        height: 110,
+                        width: 120,
+                        height: 120,
                         colorDark: "#14532d",
                         colorLight: "#ffffff",
                         correctLevel: QRCode.CorrectLevel.H
@@ -1662,29 +1673,54 @@ function saveSettingsFromObject(sheet, settingsObj) {
             });
         }
 
+        /* 
+         * FIX PERBAIKAN SOLUSI QR CODE: 
+         * Menggambar QR Code ke Canvas dengan Latar Belakang PUTIH SOLID (#FFFFFF) 
+         * dan Quiet Zone (Margin/Padding = 20px) agar mudah dipindai oleh scanner.
+         */
         function downloadQRPng(nisn, name) {
             const container = document.getElementById(`qrcode-${nisn}`);
             if (!container) return;
             
             const canvas = container.querySelector('canvas');
             const img = container.querySelector('img');
-            let dataUrl = '';
-
-            if (canvas) {
-                dataUrl = canvas.toDataURL("image/png");
-            } else if (img && img.src) {
-                dataUrl = img.src;
+            
+            const sourceElem = canvas || img;
+            if (!sourceElem) {
+                showNotification('Gagal', 'Gagal memproses gambar QR.', 'error');
+                return;
             }
 
-            if (dataUrl) {
+            const padding = 20; // Margin / Quiet Zone wajib
+            const tempCanvas = document.createElement('canvas');
+            const ctx = tempCanvas.getContext('2d');
+
+            const sourceWidth = canvas ? canvas.width : (img.naturalWidth || 120);
+            const sourceHeight = canvas ? canvas.height : (img.naturalHeight || 120);
+
+            tempCanvas.width = sourceWidth + (padding * 2);
+            tempCanvas.height = sourceHeight + (padding * 2);
+
+            // 1. Beri latar belakang PUTIH SOLID (Bukan Transparan)
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+            // 2. Gambar QR Code di tengah (dengan quiet zone padding)
+            const executeDownload = () => {
+                ctx.drawImage(sourceElem, padding, padding, sourceWidth, sourceHeight);
+                const dataUrl = tempCanvas.toDataURL('image/png');
                 const a = document.createElement('a');
                 a.href = dataUrl;
                 a.download = `QR_${nisn}_${name.replace(/\s+/g, '_')}.png`;
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
+            };
+
+            if (img && !canvas && !img.complete) {
+                img.onload = executeDownload;
             } else {
-                showNotification('Gagal', 'Gagal memproses gambar QR.', 'error');
+                executeDownload();
             }
         }
 
@@ -1694,6 +1730,7 @@ function saveSettingsFromObject(sheet, settingsObj) {
 
             html2canvas(cardElement, {
                 scale: 3,
+                backgroundColor: '#FFFFFF', // Dipastikan Latar Belakang Putih Solid
                 useCORS: true,
                 ignoreElements: (element) => element.classList.contains('print:hidden')
             }).then(canvas => {
@@ -1709,9 +1746,6 @@ function saveSettingsFromObject(sheet, settingsObj) {
             });
         }
 
-        // ==========================================
-        // FITUR REKAPITULASI (LENGKAP EDIT & HAPUS)
-        // ==========================================
         function renderReportsTable() {
             const startDate = document.getElementById('report-start-date').value;
             const endDate = document.getElementById('report-end-date').value;
@@ -1785,17 +1819,22 @@ function saveSettingsFromObject(sheet, settingsObj) {
         }
 
         function deleteAttendanceRecord(id) {
-            if(!confirm("Apakah Anda yakin ingin menghapus catatan absensi ini dari Google Sheet?")) return;
-
-            attendance = attendance.filter(a => a.id !== id);
-            syncToSpreadsheet('delete_attendance', { id: id });
-            showNotification('Proses Hapus', 'Data absensi dihapus dari Google Sheet...');
+            showConfirm("Hapus Record Absensi", "Apakah Anda yakin ingin menghapus catatan absensi ini dari Google Sheet?", () => {
+                attendance = attendance.filter(a => a.id !== id);
+                syncToSpreadsheet('delete_attendance', { id: id });
+                showNotification('Proses Hapus', 'Data absensi dihapus dari Google Sheet...');
+            });
         }
 
         function exportReportCSV() {
             const startDate = document.getElementById('report-start-date').value;
             const endDate = document.getElementById('report-end-date').value;
             const filtered = attendance.filter(a => a.date >= startDate && a.date <= endDate);
+
+            if(filtered.length === 0) {
+                showNotification('Peringatan', 'Tidak ada data absensi untuk diexport.', 'error');
+                return;
+            }
 
             let csvContent = "data:text/csv;charset=utf-8,Tanggal,NISN,Nama Siswa,Kelas,Waktu,Status\n";
             filtered.forEach(row => {
@@ -1819,11 +1858,10 @@ function saveSettingsFromObject(sheet, settingsObj) {
             settings.address = document.getElementById('setting-address').value;
             settings.headmaster = document.getElementById('setting-headmaster').value;
             settings.year = document.getElementById('setting-year').value;
-            settings.sheetUrl = document.getElementById('setting-sheet-url').value.trim();
 
-            syncToSpreadsheet('sync_settings', { settings: settings });
             applySettingsToUI();
-            showNotification('Berhasil', 'Pengaturan madrasah berhasil diperbarui di Google Spreadsheet.');
+            syncToSpreadsheet('sync_settings', { settings: settings });
+            showNotification('Pengaturan Disimpan', 'Identitas madrasah berhasil diperbarui.');
         }
 
         function openGasModal() {
@@ -1835,28 +1873,54 @@ function saveSettingsFromObject(sheet, settingsObj) {
         }
 
         function copyGasScript() {
-            const codeText = document.getElementById('gas-code-text').innerText;
+            const text = document.getElementById('gas-code-text').innerText;
             const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = codeText;
+            tempTextArea.value = text;
             document.body.appendChild(tempTextArea);
             tempTextArea.select();
             document.execCommand('copy');
             document.body.removeChild(tempTextArea);
-            showNotification('Tersalin!', 'Kode Google Apps Script v2.0 berhasil disalin ke clipboard.');
+
+            showNotification('Tersalin!', 'Kode Google Apps Script telah disalin ke clipboard.');
         }
 
-        function showNotification(title, message, type = 'success') {
-            document.getElementById('notif-title').innerText = title;
-            document.getElementById('notif-message').innerText = message;
-            const icon = document.getElementById('notif-icon');
-            if(type === 'success') {
-                icon.className = "w-16 h-16 rounded-full bg-green-100 text-green-600 mx-auto flex items-center justify-center text-2xl mb-4";
-                icon.innerHTML = '<i class="fa-solid fa-check"></i>';
-            } else {
-                icon.className = "w-16 h-16 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-2xl mb-4";
-                icon.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i>';
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirm-title').innerText = title;
+            document.getElementById('confirm-message').innerText = message;
+            pendingConfirmCallback = callback;
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal(result) {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            if (result && pendingConfirmCallback) {
+                pendingConfirmCallback();
             }
-            document.getElementById('notification-modal').classList.remove('hidden');
+            pendingConfirmCallback = null;
+        }
+
+        document.getElementById('confirm-ok-btn').onclick = function() {
+            closeConfirmModal(true);
+        };
+
+        function showNotification(title, message, type = 'success') {
+            const modal = document.getElementById('notification-modal');
+            const iconEl = document.getElementById('notif-icon');
+            const titleEl = document.getElementById('notif-title');
+            const msgEl = document.getElementById('notif-message');
+
+            titleEl.innerText = title;
+            msgEl.innerText = message;
+
+            if (type === 'error') {
+                iconEl.className = "w-16 h-16 rounded-full bg-rose-100 text-rose-600 mx-auto flex items-center justify-center text-2xl mb-4";
+                iconEl.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            } else {
+                iconEl.className = "w-16 h-16 rounded-full bg-green-100 text-green-600 mx-auto flex items-center justify-center text-2xl mb-4";
+                iconEl.innerHTML = '<i class="fa-solid fa-check"></i>';
+            }
+
+            modal.classList.remove('hidden');
         }
 
         function closeNotification() {
